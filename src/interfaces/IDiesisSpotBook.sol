@@ -4,13 +4,13 @@ pragma solidity >=0.8.0;
 interface IDiesisSpotBook {
     event BatchAuctionCleared(bytes32 indexed marketId, uint256 clearingPrice, uint256 totalVolume, uint256 residualOrders);
 
-    event ExchangeActionAccepted(bytes16 indexed clientActionId, uint16 indexed actionIndex, uint8 actionTag, bytes32 indexed marketId, address principal, bytes32 resultId);
+    event ExchangeActionAcceptedV2(bytes16 indexed clientActionId, uint16 indexed actionIndex, uint8 actionTag, bytes32 indexed marketId, address principal, bytes32 resultId);
 
-    event ExchangeActionRejected(bytes16 indexed clientActionId, uint16 indexed actionIndex, uint8 actionTag, bytes32 indexed marketId, address principal, uint16 reasonCode, bytes32 context);
+    event ExchangeActionRejectedV2(bytes16 indexed clientActionId, uint16 indexed actionIndex, uint8 actionTag, bytes32 indexed marketId, address principal, uint16 reasonCode, bytes32 context);
 
-    event ExchangeL3Mutation(bytes32 indexed marketId, bytes32 indexed orderId, address indexed trader, uint8 mutation, uint8 side, uint64 priceTicks, uint64 quantityLots, uint64 remainingLots);
+    event ExchangeL3MutationV2(bytes32 indexed marketId, bytes32 indexed orderId, address indexed trader, uint8 mutation, uint8 side, uint64 priceTicks, uint64 quantityLots, uint64 remainingLots);
 
-    event ExchangeTradeFill(bytes32 indexed marketId, bytes32 indexed makerOrderId, bytes32 indexed takerOrderId, address maker, address taker, uint8 aggressorSide, uint64 priceTicks, uint64 quantityLots);
+    event ExchangeTradeFillV2(bytes32 indexed marketId, bytes32 indexed makerOrderId, bytes32 indexed takerOrderId, address maker, address taker, uint8 aggressorSide, uint64 priceTicks, uint64 quantityLots);
 
     event OrderCancelled(bytes32 indexed orderId, bytes32 indexed marketId, address indexed trader);
 
@@ -73,17 +73,9 @@ interface IDiesisSpotBook {
     /// @dev System-only. The market must be active and have no live open orders.      Historical cleared order ids do not block auction start, but the call      charges gas for scanning those historical ids.
     function startOpeningAuction(bytes32 marketId, uint64 startBlock, uint64 endBlock, uint256 referencePrice) external;
 
-    /// @notice Proposed ordinary-caller bound-session V3 action wrapper.
-    /// @dev Inactive until a separately accepted resource policy and dispatch revision.      DXS3 contains the expected principal and current positive generation,      followed by unchanged DXA2 bytes. The result commits the full wrapper.      Sponsorship and relayer adapters are unsupported. Counts retain V2 types.
-    /// @param encodedWrapper Canonical complete DXS3 header and unchanged inner batch.
-    /// @return resultHash Full-wrapper commitment using the inherited result framing.
-    /// @return acceptedCount Accepted action count in inherited uint16 width.
-    /// @return rejectedCount Rejected action count in inherited uint16 width.
-    function submitBoundSessionActions(bytes calldata encodedWrapper) external returns (bytes32 resultHash, uint16 acceptedCount, uint16 rejectedCount);
-
     /// @notice Submit one strictly bounded canonical V2 action batch.
     /// @dev The ordinary EVM caller authenticates the batch. The encoded bytes      contain no action-level signature or replay nonce. `resultHash`      commits to the original bytes and every ordered action outcome.
-    function submitExchangeActions(bytes calldata encodedActions) external returns (bytes32 resultHash, uint16 acceptedCount, uint16 rejectedCount);
+    function submitExchangeActionsV2(bytes calldata encodedActions) external returns (bytes32 resultHash, uint16 acceptedCount, uint16 rejectedCount);
 
     /// @notice Place a limit order in an active spot market.
     /// @dev Requires an active market, `priceTicks > 0`, `amountLots > 0`, a prior      settlement deposit flag, and enough available collateral. Buy orders      lock quote collateral equal to `priceTicks * amountLots`; sell orders      lock base collateral equal to `amountLots`.

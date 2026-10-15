@@ -20,9 +20,13 @@ interface IDiesisSettlement {
 
     event Withdrawal(address indexed user, address indexed token, uint256 amount);
 
-    /// @notice Authorize one ordinary Ethereum sender as a scoped V2 session key.
-    /// @dev A zero maximum is uncapped. Principal is always `msg.sender`.
-    function authorizeSessionKey(address sessionKey, uint256 actionScope, uint64 validUntil, uint256 maxNotionalOrSpend, bytes32 allowedMarketsMask) external returns (uint64 generation);
+    /// @notice Accept exact authorization terms as the session key before principal activation.
+    /// @dev One-use consent binds chain, endpoint, principal, key, terms and next generation.      This call changes neither sender identity nor the principal's active-session count.
+    function acceptSessionKeyV2(address principal, uint256 actionScope, uint64 validUntil, uint256 maxNotionalOrSpend, bytes32 allowedMarketsMask) external returns (uint64 generation);
+
+    /// @notice Activate one scoped V2 session after its key accepted these exact terms.
+    /// @dev A zero maximum is uncapped. Principal is always `msg.sender`; consent is consumed.
+    function authorizeSessionKeyV2(address sessionKey, uint256 actionScope, uint64 validUntil, uint256 maxNotionalOrSpend, bytes32 allowedMarketsMask) external returns (uint64 generation);
 
     function availableBalance(address user, address token) external view returns (uint256 available);
 
@@ -44,7 +48,7 @@ interface IDiesisSettlement {
 
     /// @notice Permanently contribute already-deposited quote collateral to a perpetual market's canonical liquidation backstop.
     /// @dev `nonce` shares the settlement replay bitmap with other user-owned actions.
-    function fundPerpBackstop(bytes32 marketId, uint256 amount, uint256 nonce) external returns (bytes32 transactionId);
+    function fundPerpBackstopV1(bytes32 marketId, uint256 amount, uint256 nonce) external returns (bytes32 transactionId);
 
     function getTradingKeyAuth(address owner, address tradingKey) external view returns (TradingKeyAuth memory auth);
 
@@ -52,8 +56,9 @@ interface IDiesisSettlement {
 
     function registerTradingKey(address tradingKey, uint64 validUntil, uint128 maxOrderNotional, bytes32 allowedMarketsMask, bool canWithdraw) external;
 
-    /// @notice Revoke a V2 session key and advance its invalidating generation.
-    function revokeSessionKey(address sessionKey) external returns (uint64 generation);
+    /// @notice Principal or key may revoke an active session and advance its generation.
+    /// @dev A key may also cancel its pending consent. Expiry restores direct sender      identity; explicit revocation releases the principal's retained capacity.
+    function revokeSessionKeyV2(address sessionKey) external returns (uint64 generation);
 
     function revokeTradingKey(address tradingKey) external;
 

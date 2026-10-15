@@ -120,6 +120,10 @@ interface IDiesisPosition {
 
     function claimRewards(uint256 tokenId, address recipient) external;
 
+    /// @notice Create a zero-stake position to receive existing backing on a registered validator.
+    /// @dev Nonpayable. Inactive validators are allowed; funded delegation remains subject to its active gate.      Creates the backing staking NFT before the public NFT. Adds no principal or debt.
+    function createRedemptionPosition(uint32 validator) external returns (uint256 tokenId);
+
     function delegate(uint256 tokenId) external payable;
 
     /// @notice Return the effective unexpired maximum lock deadline, or zero when unlocked.

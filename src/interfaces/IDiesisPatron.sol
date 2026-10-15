@@ -230,7 +230,7 @@ interface IDiesisPatron {
     function pendingReservations(bytes32 reservationId) external view returns (PendingReservationV2 memory reservation);
 
     /// @notice Register a campaign, deriving an owner-bound id from `salt`.
-    /// @dev Permissionless and zero-value. The campaign id is `campaignIdFor(msg.sender, salt)`, so a foreign registration derives a different id and can never collide with — and capture — another account's planned campaign. Registration must precede funding: a jar that already holds contributions cannot be registered, so an incidental or malicious pre-funding cannot seize a campaign. Funding remains the separate `contribute` action against `grantIdForCampaign(campaignId)`.
+    /// @dev Permissionless and zero-value. The campaign id is `campaignIdFor(msg.sender, salt)`, so a foreign registration derives a different id and can never collide with — and capture — another account's planned campaign. Existing funding retains its contributor ownership. Funding remains the separate `contribute` action against `grantIdForCampaign(campaignId)`.
     /// @return campaignId The owner-bound campaign id now owned by the caller.
     function registerCampaignV1(bytes32 salt) external returns (bytes32 campaignId);
 
@@ -294,6 +294,10 @@ interface IDiesisPatron {
     /// @notice Reclaim a proportional share of a grant's remaining balance.
     /// @dev A withdrawal during an active reservation is a complete contributor exit: it records every live reservation-time claim before removing the caller's live share. This prevents a later refund from moving to a contributor who was never exposed to that reservation.
     function withdrawContribution(bytes32 grantId, uint256 amount) external;
+
+    /// @notice Advance a contribution exit without traversing all held cohorts.
+    /// @dev Repeat until complete. Each call either compacts idle roots, resolves one dormant alias, or snapshots and exits one live cohort. Detached reservation claims remain separately withdrawable.
+    function withdrawContributionStep(bytes32 grantId) external returns (bool complete);
 
     /// @notice Pull the settled or cancelled refund for one reservation-time contributor exit. Replay is rejected before any value is transferred.
     function withdrawReservationExit(bytes32 reservationId) external;

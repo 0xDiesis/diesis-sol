@@ -9,25 +9,25 @@ interface IDiesisPerpDeploy {
         uint8 slashReason;
     }
 
-    struct RiskTierInput {
+    struct RiskTierInputV1 {
         uint64 maxNotional;
         uint8 maxLeverage;
         uint16 maintenanceMarginBps;
     }
 
-    struct PerpPolicy {
+    struct PerpPolicyV1 {
         uint64 revision;
         uint16 backstopTopupBps;
-        RiskTierInput[] tiers;
+        RiskTierInputV1[] tiers;
     }
 
-    struct MetadataKeyset {
+    struct MetadataKeysetV1 {
         uint64 epoch;
         uint8 threshold;
         address[] signers;
     }
 
-    struct MetadataSignature {
+    struct MetadataSignatureV1 {
         address signer;
         bytes32 r;
         bytes32 s;
@@ -48,46 +48,46 @@ interface IDiesisPerpDeploy {
 
     event AuctionWinRecorded(bytes32 indexed marketId, address indexed operator);
 
-    event BasicPerpMarketInitialized(bytes32 indexed marketId);
-
     event Closed(bytes32 indexed marketId);
 
     event Delisting(bytes32 indexed marketId, uint64 windowCloseBlock);
 
     event LiveStarted(bytes32 indexed marketId);
 
-    event PerpMarketClosePrepared(bytes32 indexed marketId, uint16 ordersCancelled, uint16 positionsSettled, bool readyToFinalize);
+    event PerpMarketClosePreparedV1(bytes32 indexed marketId, uint16 ordersCancelled, uint16 positionsSettled, bool readyToFinalize);
 
-    event PolicyPerpMarketInitialized(bytes32 indexed marketId, bytes32 policyHash, bytes32 keysetHash);
+    event PerpMarketInitializedV1(bytes32 indexed marketId);
+
+    event PerpMarketInitializedV2(bytes32 indexed marketId, bytes32 policyHash, bytes32 keysetHash);
 
     event Slashed(bytes32 indexed marketId, uint8 reason);
 
     /// @notice Apply one consensus-attested perpetual-market abandonment transition.
     /// @dev Native-runtime only: the dispatcher accepts this fixed-width selector      only from the system caller (`address(0)`).
-    function applyPerpAbandonment(bytes32 marketId, bytes32 parentHash, uint64 blockNumber, uint64 policyEpoch, bytes32 policyHash, uint64 windowStart, uint64 windowEnd, uint256 filledVolume, uint256 operatorFees, uint64 lastMetadataUpdate, bytes32 inputHash, uint64 committeeEpoch, bytes32 committeeIdentity, uint64 quorumPower, uint64 attestingPower, uint16 voterCount, bytes32 evidenceHash) external;
+    function applyPerpAbandonmentV1(bytes32 marketId, bytes32 parentHash, uint64 blockNumber, uint64 policyEpoch, bytes32 policyHash, uint64 windowStart, uint64 windowEnd, uint256 filledVolume, uint256 operatorFees, uint64 lastMetadataUpdate, bytes32 inputHash, uint64 committeeEpoch, bytes32 committeeIdentity, uint64 quorumPower, uint64 attestingPower, uint16 voterCount, bytes32 evidenceHash) external;
 
     /// @notice Apply a canonical system-owned operator-bond slash.
     /// @dev Native-runtime only: the dispatcher accepts this selector only from      the system caller (`address(0)`). It is ABI-visible but intentionally      not forwarded by `DiesisPerpDeploy`.
     function applySlash(bytes32 marketId, uint8 reason) external;
 
     /// @notice Sole production deployment path for a settled slot.
-    /// @dev Caller must be the recorded operator. The runtime validates all      dynamic fields before ABI allocation and requires their canonical      combined commitment to equal the auction registration evidence.      For a priced registration, sourceList is exactly ASCII      "diesis.exchange.oracle-source-configuration.v2" followed by the      32-byte descriptor commitment and the 32-byte source-set hash.      Legacy sourceList bytes stay opaque. Metadata and signatures stay      opaque; signature bytes are not validated as attestations here.
+    /// @dev Caller must be the recorded operator. The runtime validates all      dynamic fields before ABI allocation and requires their canonical      combined commitment to equal the auction registration evidence.      The fields are opaque bytes: this version does not parse them or      validate the signature bytes as attestations.
     function deployPerp(bytes32 slotId, bytes32 marketId, bytes calldata sourceList, bytes calldata metadata, bytes calldata signatures) external returns (bytes32);
 
     /// @notice Process at most one activation expiry and one completion expiry         from separate bounded canonical queues.
     /// @dev Native-runtime only and replay-safe. It is invoked by deterministic      block-start maintenance and intentionally omitted from the facade.
-    function expireNextUnactivatedPerp() external;
+    function expireNextUnactivatedPerpV1() external;
 
     /// @notice Expire one incomplete auction deployment after its deadline.
     /// @dev Native-runtime only. This covers both an untouched winner and a      cooling/live deployment that never completed canonical market      initialization. Missing bonds close without slashing; a posted bond      is atomically slashed before the deployment record closes.
-    function expireUnactivatedPerp(bytes32 marketId) external;
+    function expireUnactivatedPerpV1(bytes32 marketId) external;
 
     /// @notice Finalize close on a market whose `Delisting` or `Slashed`         window has elapsed. Transitions to `Closed`.
     /// @dev Reverts with `InvalidStateTransition` if the window has not      closed, or with `NoSuchMarket` if `marketId` is unknown.
     function finalizeClose(bytes32 marketId) external;
 
     /// @notice Apply one due, system-owned perpetual policy proposal.
-    function finalizePerpPolicy(bytes32 marketId, uint64 revision, bytes32 proposalId) external;
+    function finalizePerpPolicyV1(bytes32 marketId, uint64 revision, bytes32 proposalId) external;
 
     /// @notice Read the current deployment record for `marketId`.
     /// @dev Reverts with `NoSuchMarket` if `marketId` is unknown.
@@ -101,26 +101,18 @@ interface IDiesisPerpDeploy {
 
     /// @notice Read the active perpetual policy through the native precompile.
     /// @dev M0 freezes the selector and structured return schema. Native policy      read implementation remains deferred to X4b M2.
-    function getPerpPolicy(bytes32 marketId) external view returns (PerpPolicy memory policy, MetadataKeyset memory keyset);
+    function getPerpPolicyV1(bytes32 marketId) external view returns (PerpPolicyV1 memory policy, MetadataKeysetV1 memory keyset);
 
     /// @notice Materialize a live auction deployment into the canonical market         and clearing registries. `initialMark` is an unscaled tick price.
-    function initializeBasicPerpMarket(address baseToken, address quoteToken, uint64 tickSize, uint64 lotSize, uint256 maxOpenInterest, uint256 initialMark, uint8 maxLeverage) external returns (bytes32 marketId);
+    function initializePerpMarketV1(address baseToken, address quoteToken, uint64 tickSize, uint64 lotSize, uint256 maxOpenInterest, uint256 initialMark, uint8 maxLeverage) external returns (bytes32 marketId);
 
     /// @notice Atomically initialize the market and its first policy/keyset.
     /// @dev This freezes the public V2 wire contract only. Native validation,      registry writes, and idempotence are introduced by X4b M2.
-    function initializePolicyPerpMarket(address baseToken, address quoteToken, uint64 tickSize, uint64 lotSize, uint256 maxOpenInterest, uint256 initialMark, PerpPolicy calldata policy, MetadataKeyset calldata keyset) external returns (bytes32 marketId);
-
-    /// @notice Initialize a priced market and its first policy/keyset atomically.
-    /// @dev Requires the retained accepted version-one listing identity and      matching nonzero denominator. The denominator divides lotSize.      maxOpenInterest is full-width canonical q/priceDenominator size;      initialMark is p in immutable market price units. Clearing stores      its scaled p*PRICE_SCALE mirror. This returns one bytes32 market id.
-    function initializePricedPerpMarket(address baseToken, address quoteToken, uint64 tickSize, uint64 lotSize, uint64 priceDenominator, uint256 maxOpenInterest, uint256 initialMark, PerpPolicy calldata policy, MetadataKeyset calldata keyset) external returns (bytes32 marketId);
+    function initializePerpMarketV2(address baseToken, address quoteToken, uint64 tickSize, uint64 lotSize, uint256 maxOpenInterest, uint256 initialMark, PerpPolicyV1 calldata policy, MetadataKeysetV1 calldata keyset) external returns (bytes32 marketId);
 
     /// @notice Operator-initiated voluntary delist. Opens a 30-day backstop         claim window before the bond becomes release-eligible.
     /// @dev Reverts with `InvalidStateTransition` if the market is not `Live`,      or with `NoSuchMarket` if `marketId` is unknown.
     function initiateDelist(bytes32 marketId) external;
-
-    /// @notice Install the immutable authenticated priced oracle descriptor.
-    /// @dev Caller must be the accepted operator of an initialized Live priced      deployment. Decimals are explicit and at most 77. roundingPolicy      must be one, nearest tick with ties toward the lower tick.      sourceSetHash must be nonzero. Its descriptor-bound configuration      commitment must equal accepted deployment evidence.sourceListHash.      Identical retries return no data; conflicting metadata reverts.
-    function installPricedOracleDescriptor(bytes32 marketId, uint8 baseDecimals, uint8 quoteDecimals, uint8 roundingPolicy, bytes32 sourceSetHash) external;
 
     /// @notice Advance one bounded step of market-close preparation.
     /// @dev Cancels open orders with exact reserve release, settles funding,      and closes or transfers residual positions in restart-safe chunks,      charging a hard bound before mutation. Progress is persisted to the      canonical close cursor so repeated calls resume deterministically.      A `Slashed` market may be progressed permissionlessly because no      caller-controlled economic transition remains after slashing.      `finalizeClose` may only succeed once this returns `true`. Later      tasks implement the continuation; this freezes the release selector      and bounded argument layout.
@@ -128,7 +120,7 @@ interface IDiesisPerpDeploy {
     /// @param maxOrders Maximum open orders to process this call.
     /// @param maxPositions Maximum positions to process this call.
     /// @return readyToFinalize True once no dependent state remains and the         market may be finalized.
-    function preparePerpMarketClose(bytes32 marketId, uint16 maxOrders, uint16 maxPositions) external returns (bool readyToFinalize);
+    function preparePerpMarketCloseV1(bytes32 marketId, uint16 maxOrders, uint16 maxPositions) external returns (bool readyToFinalize);
 
     /// @notice Promote an elapsed cooling market to `Live`.
     /// @dev Permissionless: this only materializes the stored transition after      its cooling deadline, and never changes the recorded operator.
@@ -136,7 +128,7 @@ interface IDiesisPerpDeploy {
 
     /// @notice Propose a timelocked, current-keyset-attested policy update.
     /// @dev Signature validation and timelock persistence are introduced by      X4b M2; this packet intentionally freezes only the ABI.
-    function proposePerpPolicy(bytes32 marketId, uint64 expectedRevision, uint64 expectedKeysetEpoch, uint16 backstopTopupBps, RiskTierInput[] calldata tiers, address[] calldata nextSigners, uint8 nextThreshold, MetadataSignature[] calldata signatures) external returns (bytes32 proposalId, uint64 executeAfter);
+    function proposePerpPolicyV1(bytes32 marketId, uint64 expectedRevision, uint64 expectedKeysetEpoch, uint16 backstopTopupBps, RiskTierInputV1[] calldata tiers, address[] calldata nextSigners, uint8 nextThreshold, MetadataSignatureV1[] calldata signatures) external returns (bytes32 proposalId, uint64 executeAfter);
 
     /// @notice Record a settled auction registration before operator actions.
     /// @dev Native-runtime only: the dispatcher accepts this selector only from      the system caller (`address(0)`). It is declared for ABI/indexer      parity but intentionally not forwarded by `DiesisPerpDeploy`.      An identical replay is a no-op; any commitment conflict reverts.

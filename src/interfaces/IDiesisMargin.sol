@@ -7,5 +7,5 @@ interface IDiesisMargin {
     event Liquidation(bytes32 indexed marketId, address indexed trader, uint256 size, uint256 price, uint256 penalty);
 
     /// @notice System-owned canonical frontier resolution. External callers are rejected.
-    function resolvePerpProtection(bytes32 marketId) external returns (bytes32 transactionId);
+    function resolvePerpProtectionV1(bytes32 marketId) external returns (bytes32 transactionId);
 }

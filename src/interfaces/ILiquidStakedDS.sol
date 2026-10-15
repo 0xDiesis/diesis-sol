@@ -22,6 +22,8 @@ interface ILiquidStakedDS {
 
     function burn(uint256 amount) external;
 
+    /// @notice Burn holder tokens. Callers other than `from` must have allowance, including DiesisPosition.
+    /// @dev Finite allowance decreases by the burn; maximum allowance is unchanged. Failed burns preserve allowance.
     function burnFrom(address from, uint256 amount) external;
 
     function decimals() external view returns (uint8);

@@ -15,21 +15,13 @@ interface IDiesisMarkets {
     /// @dev System-only. Market must exist and `referencePrice` must be nonzero.
     function checkCircuitBreaker(bytes32 marketId, uint256 currentPrice, uint256 referencePrice, uint256 thresholdBps) external returns (uint256 tripped);
 
-    /// @notice Create a spot market with immutable version-one price units.
-    /// @dev Public quantities are raw q; canonical size is q/priceDenominator.      Quote notional is p*(q/priceDenominator). The denominator is nonzero      and divides the nonzero lotSize. The market id commits to version      one and the denominator using the native address20 token identity.      Bond custody and the market ordinal bound match createSpotMarket.
-    function createPricedSpotMarket(address baseToken, address quoteToken, uint64 tickSize, uint64 lotSize, uint64 priceDenominator, uint256 bond) external returns (bytes32 marketId);
-
-    /// @dev `bond`, when nonzero, is deducted from the creator's WDS settlement balance. Reverts after the append-only 256-market ordinal namespace is full.
+    /// @dev Legacy provisioning requires the current Config owner. Public issuance uses `deployTokenAndSpotBook`. `bond`, when nonzero, is deducted from the creator's WDS settlement balance. Reverts after the append-only 256-market ordinal namespace is full.
     function createSpotMarket(address baseToken, address quoteToken, uint64 tickSize, uint64 lotSize, uint256 bond) external returns (bytes32 marketId);
 
     /// @dev Deploys a token through the factory and creates its USDC spot market atomically.
     function deployTokenAndSpotBook(bytes11 symbol, string calldata name, uint256 initialSupply, uint256 dsBond, uint256 usdcFee) external returns (bytes32 marketId, address token);
 
     function getMarket(bytes32 marketId) external view returns (PackedMarket memory market);
-
-    /// @notice Read authenticated immutable market price units.
-    /// @dev Returns version zero and denominator one for a proved legacy      address20 identity. Missing or inconsistent market metadata reverts.
-    function getMarketPricing(bytes32 marketId) external view returns (uint8 pricingVersion, uint64 priceDenominator);
 
     function resumeMarket(bytes32 marketId) external returns (uint256 success);
 }

@@ -26,21 +26,21 @@ interface IDiesisErc20Factory {
     event TemplateUpdated(bytes32 newBytecodeHash, uint64 unlockBlock);
 
     /// @notice Deploy a new ERC-20 at the deterministic address.
-    /// @dev Reverts with `DuplicateDeployment` if the `(deployer, symbol)` pair      has already been used, with `InvalidSymbolLength` or `InvalidSupply`      on parameter validation, and with `FactoryCallFailed` for any other      precompile-side failure.
+    /// @dev Reverts with `DuplicateDeployment` if the `(deployer, symbol)` pair      has already been used, with `InvalidSymbolLength` or `InvalidSupply`      on parameter validation, and with `FactoryCallFailed` for any other      precompile-side failure.External callers must equal `params.deployer`.
     /// @param params Deployment parameters.
     /// @return tokenAddress The deterministically derived token address.
     function deploy(DeployParams calldata params) external returns (address tokenAddress);
 
     /// @notice Execute the pending template update if its timelock has elapsed.
-    /// @dev Reverts with `TemplateUpdateLocked` if invoked before the unlock block      or if no proposal is pending.
+    /// @dev Execution is permissionless and rechecks embedded artifact availability. Reverts with `TemplateUpdateLocked` if invoked before the unlock block      or if no proposal is pending.
     function executeTemplateUpdate() external;
 
     /// @notice Predict the address the factory will deploy for `(deployer, symbol)`.
     /// @dev The address is `keccak256(0xFF || factory || salt || keccak256(initCode))[12:]`      where `salt = keccak256(deployer || symbol)` and `initCode` is the pinned      template constructor bytecode wrapping `(name, symbol, initialSupply, deployer)`.
     function predictAddress(address deployer, bytes11 symbol) external view returns (address);
 
-    /// @notice Propose a new template bytecode hash. Subject to a 7-day timelock.
-    /// @dev Multiple proposals overwrite the previous pending hash and reset the timelock.
+    /// @notice Propose a new template bytecode hash. Subject to a 604,800-block delay.
+    /// @dev The current Config owner must propose a runtime embedded in this node build. Multiple proposals overwrite the pending hash and reset the block delay.
     function proposeTemplateUpdate(bytes32 newHash) external;
 
     /// @notice Read the keccak256 of the currently pinned template runtime bytecode.
