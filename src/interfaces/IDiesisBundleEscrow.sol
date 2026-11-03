@@ -37,8 +37,8 @@ interface IDiesisBundleEscrow {
 
     event Withdrawn(address indexed account, uint256 amount);
 
-    /// @notice Cancel a reservation and credit the full locked amount to the payer.
-    /// @dev Node-only (`msg.sender == address(0)`). Used when a bundle is rejected      or terminalized before settlement. Exactly-once via `settled`.
+    /// @notice Cancel a reservation and credit the full locked amount to the payer.      or terminalized before settlement. Exactly-once via `settled`.
+    /// @dev Node-only (`msg.sender == address(0)`). Used when a bundle is rejected
     /// @param payer The reserving payer keying the reservation.
     /// @param planHash Committed bundle plan hash.
     /// @param escrowNonce Reservation nonce.
@@ -48,8 +48,8 @@ interface IDiesisBundleEscrow {
     /// @notice Claimable native balance credited to `account`.
     function claimable(address account) external view returns (uint256);
 
-    /// @notice Finalize a reservation after the member outcome is known.
-    /// @dev Node-only (`msg.sender == address(0)`). Credits `beneficiary` the      committed builder payment and the payer the capped skipped-work refund      plus the unearned reserve. Purely mutates claimable balances with      saturating arithmetic, so it can never revert on hostile terms or a      hostile recipient. Exactly-once via the `settled` guard.
+    /// @notice Finalize a reservation after the member outcome is known.      committed builder payment and the payer the capped skipped-work refund      plus the unearned reserve. Purely mutates claimable balances with      saturating arithmetic, so it can never revert on hostile terms or a      hostile recipient. Exactly-once via the `settled` guard.
+    /// @dev Node-only (`msg.sender == address(0)`). Credits `beneficiary` the
     /// @param payer The reserving payer keying the reservation.
     /// @param planHash Committed bundle plan hash.
     /// @param escrowNonce Reservation nonce.
@@ -60,8 +60,8 @@ interface IDiesisBundleEscrow {
     /// @return unearnedReserve Unused refund reserve credited to the payer.
     function finalizeBundle(address payer, bytes32 planHash, uint256 escrowNonce, uint256 skippedGas, address beneficiary) external returns (uint256 builderPaid, uint256 refunded, uint256 unearnedReserve);
 
-    /// @notice Payer-initiated reclaim of an expired, unsettled reservation.
-    /// @dev Callable only by the reservation's payer (`msg.sender`), and only once      the committed expiry has passed. Credits the payer the full locked      amount. Exactly-once via `settled`.
+    /// @notice Payer-initiated reclaim of an expired, unsettled reservation.      the committed expiry has passed. Credits the payer the full locked      amount. Exactly-once via `settled`.
+    /// @dev Callable only by the reservation's payer (`msg.sender`), and only once
     /// @param planHash Committed bundle plan hash.
     /// @param escrowNonce Reservation nonce.
     /// @return returned Full amount credited to the payer.
@@ -70,19 +70,19 @@ interface IDiesisBundleEscrow {
     /// @notice Read the reservation for `(payer, planHash, escrowNonce)`.
     function reservationOf(address payer, bytes32 planHash, uint256 escrowNonce) external view returns (Reservation memory);
 
-    /// @notice Lock `maximumBuilderPayment + maximumRefund` for a bundle plan.
-    /// @dev Called by the payer as the bundle's reservation transaction. Must be      funded with exactly `maximumBuilderPayment + maximumRefund` native      wei. The reservation is keyed by `(msg.sender, planHash, escrowNonce)`;      a live reservation for that triple rejects nonce replay.
+    /// @notice Lock `maximumBuilderPayment + maximumRefund` for a bundle plan.      funded with exactly `maximumBuilderPayment + maximumRefund` native      wei. The reservation is keyed by `(msg.sender, planHash, escrowNonce)`;      a live reservation for that triple rejects nonce replay.        and plan hash.
+    /// @dev Called by the payer as the bundle's reservation transaction. Must be
     /// @param planHash Committed bundle plan hash.
     /// @param maximumBuilderPayment Committed builder payment.
     /// @param refundGasPrice Refund price per skipped gas unit.
     /// @param maximumRefund Committed refund ceiling.
-    /// @param escrowNonce Reservation nonce keying the slot alongside the payer        and plan hash.
+    /// @param escrowNonce Reservation nonce keying the slot alongside the payer
     /// @param expiry Committed plan expiry (unix seconds).
     /// @return reservedTotal The total native wei locked.
     function reserveBundle(bytes32 planHash, uint256 maximumBuilderPayment, uint256 refundGasPrice, uint256 maximumRefund, uint256 escrowNonce, uint64 expiry) external payable returns (uint256 reservedTotal);
 
-    /// @notice Withdraw the caller's accumulated claimable balance.
-    /// @dev The single native-transfer exit. Zeroes the balance before transfer      (checks-effects-interactions) and is reentrancy-guarded. A caller that      reverts on receipt only griefs itself; settlement already happened.
+    /// @notice Withdraw the caller's accumulated claimable balance.      (checks-effects-interactions) and is reentrancy-guarded. A caller that      reverts on receipt only griefs itself; settlement already happened.
+    /// @dev The single native-transfer exit. Zeroes the balance before transfer
     /// @return amount The amount transferred.
     function withdraw() external returns (uint256 amount);
 }

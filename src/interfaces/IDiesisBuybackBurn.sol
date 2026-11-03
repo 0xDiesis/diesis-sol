@@ -29,16 +29,16 @@ interface IDiesisBuybackBurn {
     /// @notice Lifetime DS burned across all sources.
     function cumulativeBurnedDs() external view returns (uint256);
 
-    /// @notice Last TWAP-average execution price recorded for `token`.
-    /// @dev DS-quote, oracle scale. Updated incrementally on each successful      chunk emission; zero if no chunks have executed yet.
+    /// @notice Last TWAP-average execution price recorded for `token`.      chunk emission; zero if no chunks have executed yet.
+    /// @dev DS-quote, oracle scale. Updated incrementally on each successful
     function lastTwapAveragePrice(address token) external view returns (uint256);
 
-    /// @notice Block at which the next TWAP window for `token` opens.
-    /// @dev When a window is active, this returns the active window's end      block (the earliest block at which a fresh window may begin).      Returns zero when no window has ever been scheduled for `token`.
+    /// @notice Block at which the next TWAP window for `token` opens.      block (the earliest block at which a fresh window may begin).      Returns zero when no window has ever been scheduled for `token`.
+    /// @dev When a window is active, this returns the active window's end
     function nextWindowStartBlock(address token) external view returns (uint64);
 
-    /// @notice Read the pending (non-DS) accumulator for `token`.
-    /// @dev DS deposits burn immediately and never accumulate; this returns      zero for DS.
+    /// @notice Read the pending (non-DS) accumulator for `token`.      zero for DS.
+    /// @dev DS deposits burn immediately and never accumulate; this returns
     function pendingPurchaseByAsset(address token) external view returns (uint256);
 
     /// @notice Read the current window state, if any.

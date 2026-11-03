@@ -30,8 +30,8 @@ interface IDiesisIssuanceAuction {
 
     event SlotSettled(bytes32 indexed marketId, address indexed winner, bytes32 registrationDigest, uint256 priceUsdc);
 
-    /// @notice Place a canonical-USDC bid bound to one perpetual registration.
-    /// @dev The native runtime debits USDC; this selector is intentionally not      payable and accepts no caller-supplied winner.
+    /// @notice Place a canonical-USDC bid bound to one perpetual registration.      payable and accepts no caller-supplied winner.
+    /// @dev The native runtime debits USDC; this selector is intentionally not
     function bidPerpListingV1(PerpRegistrationV1 calldata registration) external;
 
     /// @notice Return the fixed V1 perpetual-listing price in USDC units.
@@ -40,7 +40,7 @@ interface IDiesisIssuanceAuction {
     /// @notice Read the active perpetual-listing slot and registration digest.
     function getPerpListingSlotV1() external view returns (PerpListingSlotV1 memory);
 
-    /// @notice Settle the elapsed perpetual-listing slot.
-    /// @dev Native-runtime only: settlement atomically routes the accepted USDC      price (70% burn, 20% treasury, 10% validator rewards) and records      the winning registration with `DiesisPerpDeploy`. This selector is      ABI-visible for system dispatch but intentionally not forwarded by      `DiesisIssuanceAuction`. It returns no data; after the first due      transition, every repeat is a successful no-op over persisted state.
+    /// @notice Settle the elapsed perpetual-listing slot.      price (70% burn, 20% treasury, 10% validator rewards) and records      the winning registration with `DiesisPerpDeploy`. This selector is      ABI-visible for system dispatch but intentionally not forwarded by      `DiesisIssuanceAuction`. It returns no data; after the first due      transition, every repeat is a successful no-op over persisted state.
+    /// @dev Native-runtime only: settlement atomically routes the accepted USDC
     function settlePerpListingV1() external;
 }

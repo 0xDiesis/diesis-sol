@@ -120,8 +120,8 @@ interface IDiesisPosition {
 
     function claimRewards(uint256 tokenId, address recipient) external;
 
-    /// @notice Create a zero-stake position to receive existing backing on a registered validator.
-    /// @dev Nonpayable. Inactive validators are allowed; funded delegation remains subject to its active gate.      Creates the backing staking NFT before the public NFT. Adds no principal or debt.
+    /// @notice Create a zero-stake position to receive existing backing on a registered validator.      Creates the backing staking NFT before the public NFT. Adds no principal or debt.
+    /// @dev Nonpayable. Inactive validators are allowed; funded delegation remains subject to its active gate.
     function createRedemptionPosition(uint32 validator) external returns (uint256 tokenId);
 
     function delegate(uint256 tokenId) external payable;
@@ -147,8 +147,8 @@ interface IDiesisPosition {
     /// @dev `lockDuration` must be non-zero and must produce a deadline later than the current owner record.
     function lockPosition(uint256 tokenId, uint40 lockDuration) external;
 
-    /// @notice Lock a position on behalf of its owner.
-    /// @dev Callable by authorized lock managers. Outstanding records remain enumerable after expiry      until their manager removes them; at most `MAX_LOCK_RECORDS` may exist per position.      A zero duration or a deadline that does not strictly extend the same record reverts.
+    /// @notice Lock a position on behalf of its owner.      until their manager removes them; at most `MAX_LOCK_RECORDS` may exist per position.      A zero duration or a deadline that does not strictly extend the same record reverts.
+    /// @dev Callable by authorized lock managers. Outstanding records remain enumerable after expiry
     function lockPositionFor(uint256 tokenId, bytes32 lockId, uint40 lockDuration) external;
 
     /// @notice Return one outstanding lock record by index.
@@ -160,8 +160,8 @@ interface IDiesisPosition {
     /// @notice Return the deadline recorded for one lock identity.
     function lockUntilFor(uint256 tokenId, address manager, bytes32 lockId) external view returns (uint40);
 
-    /// @notice Atomically merge two positions on the same validator.
-    /// @dev Source must have no debt and not be locked. Uses swapDelegate for atomic re-delegation.      Burns the source NFT.
+    /// @notice Atomically merge two positions on the same validator.      Burns the source NFT.
+    /// @dev Source must have no debt and not be locked. Uses swapDelegate for atomic re-delegation.
     /// @param fromTokenId The source position (will be burned).
     /// @param intoTokenId The target position (receives the merged stake).
     function mergePosition(uint256 fromTokenId, uint256 intoTokenId) external;
@@ -187,11 +187,11 @@ interface IDiesisPosition {
 
     function revokeFunctionApproval(uint256 tokenId, uint8 fn) external;
 
-    /// @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients are aware of the ERC-721 protocol to prevent tokens from being forever locked. Requirements: - `from` cannot be the zero address. - `to` cannot be the zero address. - `tokenId` token must exist and be owned by `from`. - If the caller is not `from`, it must have been allowed to move this token by either {approve} or   {setApprovalForAll}. - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon   a safe transfer. Emits a {Transfer} event.
-    function safeTransferFrom(address from, address to, uint256 tokenId) external;
-
-    /// @dev Safely transfers `tokenId` token from `from` to `to`. Requirements: - `from` cannot be the zero address. - `to` cannot be the zero address. - `tokenId` token must exist and be owned by `from`. - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}. - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon   a safe transfer. Emits a {Transfer} event.
+    /// @dev Safely transfers `tokenId` token from `from` to `to`. Requirements: - `from` cannot be the zero address. - `to` cannot be the zero address. - `tokenId` token must exist and be owned by `from`. - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}. - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer. Emits a {Transfer} event.
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) external;
+
+    /// @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients are aware of the ERC-721 protocol to prevent tokens from being forever locked. Requirements: - `from` cannot be the zero address. - `to` cannot be the zero address. - `tokenId` token must exist and be owned by `from`. - If the caller is not `from`, it must have been allowed to move this token by either {approve} or {setApprovalForAll}. - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer. Emits a {Transfer} event.
+    function safeTransferFrom(address from, address to, uint256 tokenId) external;
 
     /// @dev Approve or remove `operator` as an operator for the caller. Operators can call {transferFrom} or {safeTransferFrom} for any token owned by the caller. Requirements: - The `operator` cannot be the address zero. Emits an {ApprovalForAll} event.
     function setApprovalForAll(address operator, bool approved) external;
@@ -201,10 +201,10 @@ interface IDiesisPosition {
     /// @notice Return the share debt for a position.
     function shareDebtOf(uint256 tokenId) external view returns (uint256);
 
-    /// @notice Atomically split a position into two on the same validator (no unbonding delay).
+    /// @notice Atomically split a position into two on the same validator (no unbonding delay).        source remainder must be 0 or ≥ MIN_STAKE).
     /// @dev Uses swapDelegate for instant re-delegation between positions.
     /// @param fromTokenId The source position to split from.
-    /// @param splitAmount Wei to move to the new position (must be ≥ MIN_STAKE and ≤ free collateral;        source remainder must be 0 or ≥ MIN_STAKE).
+    /// @param splitAmount Wei to move to the new position (must be ≥ MIN_STAKE and ≤ free collateral;
     /// @return newTokenId The newly minted position NFT.
     function splitPosition(uint256 fromTokenId, uint256 splitAmount) external returns (uint256 newTokenId);
 
@@ -242,7 +242,7 @@ interface IDiesisPosition {
 
     function withdraw(uint256 tokenId, uint256 wrId) external;
 
-    /// @notice Complete a matured withdrawal and forward the native tokens directly to `recipient`.
-    /// @dev The amount is determined by DiesisStaking's stored unstake request; callers cannot         supply a partial amount. `recipient` must be non-zero.
+    /// @notice Complete a matured withdrawal and forward the native tokens directly to `recipient`.         supply a partial amount. `recipient` must be non-zero.
+    /// @dev The amount is determined by DiesisStaking's stored unstake request; callers cannot
     function withdrawTo(uint256 tokenId, uint256 wrId, address recipient) external;
 }

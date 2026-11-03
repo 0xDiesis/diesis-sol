@@ -50,8 +50,8 @@ interface IDiesisCoreVault {
     /// @notice Cancel a previously queued exit at `queueIndex` in the         FIFO list. Returns the locked shares to the caller. Only         the owner of the request may cancel.
     function cancelExit(uint8 id, uint256 queueIndex) external;
 
-    /// @notice Deposit `amount` of the strategy's quote asset and mint         proportional shares. Reverts if the strategy is paused.
-    /// @dev `msg.value` semantics depend on the precompile's chosen      payment routing; the canonical implementation accepts native      DS for DS-denominated sub-vaults and bridges for others.
+    /// @notice Deposit `amount` of the strategy's quote asset and mint         proportional shares. Reverts if the strategy is paused.      payment routing; the canonical implementation accepts native      DS for DS-denominated sub-vaults and bridges for others.
+    /// @dev `msg.value` semantics depend on the precompile's chosen
     function deposit(uint8 id, uint256 amount) external payable;
 
     /// @notice Execute a previously proposed risk-parameter change once         the timelock has elapsed. Anyone can call.
@@ -60,8 +60,8 @@ interface IDiesisCoreVault {
     /// @notice Snapshot of the queued exits for a strategy, in FIFO order.
     function exitQueue(uint8 id) external view returns (ExitRequest[] memory);
 
-    /// @notice Get the NAV checkpoint stored at `blockNumber`, if any.
-    /// @return cp The checkpoint; `cp.blockNumber == 0` indicates no         checkpoint exists at that block.
+    /// @notice Get the NAV checkpoint stored at `blockNumber`, if any.         checkpoint exists at that block.
+    /// @return cp The checkpoint; `cp.blockNumber == 0` indicates no
     function getCheckpoint(uint8 id, uint64 blockNumber) external view returns (NavCheckpoint memory cp);
 
     /// @notice Read the currently pre-committed risk parameters.

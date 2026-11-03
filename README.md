@@ -26,7 +26,7 @@ diesis-sol/=lib/diesis-sol/src/
 ```
 
 The generated interfaces require Solidity 0.8.4 or newer for custom errors.
-The SDK's tests use Solidity 0.8.35. No runtime or Solidity library dependency
+The SDK's tests use Solar 0.3.0 (Solidity 0.8.38). No runtime or Solidity library dependency
 is required. Hardhat users can place a checkout in their project and import
 the `.sol` files from its `src` directory.
 
@@ -109,7 +109,11 @@ and the SDK's `canonical.json` in a standalone checkout. Use `--canonical` or
 
 ## Develop
 
+Install the pinned compiler and keep `$HOME/.foundry/bin` on `PATH`. The Foundry
+configuration selects Solar in development, CI and release builds.
+
 ```sh
+./scripts/install-solar.sh
 python3 -m unittest discover -s tests -v
 forge test
 python3 scripts/generate.py --check

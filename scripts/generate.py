@@ -55,6 +55,34 @@ def sync_files(root: Path, files: dict[str, str], check: bool) -> list[str]:
     return problems
 
 
+def normalize_natspec(value):
+    if isinstance(value, dict):
+        return {key: normalize_natspec(entry) for key, entry in value.items()}
+    if isinstance(value, list):
+        return [normalize_natspec(entry) for entry in value]
+    if isinstance(value, str):
+        return " ".join(part for line in value.splitlines() if (part := re.sub(r"^\s*\* ?", "", line).strip()))
+    return value
+
+
+def typegen_artifact(path: Path) -> dict:
+    artifact = json.loads(path.read_text())
+    # Solar preserves multiline NatSpec. abi-typegen 0.8.0 emits each doc field
+    # as one /// comment, so normalize only documentation in its temporary input.
+    for key in ("metadata", "rawMetadata"):
+        metadata = artifact.get(key)
+        encoded = isinstance(metadata, str)
+        if encoded:
+            metadata = json.loads(metadata)
+        if isinstance(metadata, dict):
+            output = metadata.get("output", {})
+            for doc in ("userdoc", "devdoc"):
+                if doc in output:
+                    output[doc] = normalize_natspec(output[doc])
+            artifact[key] = json.dumps(metadata) if encoded else metadata
+    return artifact
+
+
 def expected_files(artifacts: Path, canonical_path: Path, binary: str) -> dict[str, str]:
     config = json.loads((ROOT / "generation.json").read_text())
     version = subprocess.run([binary, "--version"], check=True, capture_output=True, text=True).stdout.strip()
@@ -65,18 +93,22 @@ def expected_files(artifacts: Path, canonical_path: Path, binary: str) -> dict[s
     # rejects missing/ambiguous input instead of silently generating a subset.
     with tempfile.TemporaryDirectory(prefix="diesis-sol-") as directory:
         temp = Path(directory)
+        inputs = temp / "artifacts"
         for name in config["contracts"]:
             matches = sorted(artifacts.rglob(f"{name}.json"))
             if len(matches) != 1:
                 raise ValueError(f"expected one artifact for {name} in {artifacts}; found {len(matches)}")
+            target = inputs / f"{name}.sol" / f"{name}.json"
+            target.parent.mkdir(parents=True)
+            target.write_text(json.dumps(typegen_artifact(matches[0])))
         output = temp / "generated"
-        subprocess.run([binary, "generate", "--artifacts", str(artifacts), "--contracts", ",".join(config["contracts"]), "--target", config["target"], "--out", str(output)], check=True)
+        subprocess.run([binary, "generate", "--artifacts", str(inputs), "--contracts", ",".join(config["contracts"]), "--target", config["target"], "--out", str(output)], check=True)
         produced = {path.name: path for path in output.rglob("*.sol")}
         expected = {f"{interface_name(name)}.sol" for name in config["contracts"]}
         if set(produced) != expected:
             raise ValueError(f"unexpected generated interfaces: {sorted(produced)}; expected {sorted(expected)}")
         for name, path in produced.items():
-            files[f"src/interfaces/{name}"] = path.read_text()
+            files[f"src/interfaces/{name}"] = "\n".join(line.rstrip() for line in path.read_text().splitlines()) + "\n"
     canonical_text = canonical_path.read_text()
     files["canonical.json"] = canonical_text
     files.update(render_constants(json.loads(canonical_text)))

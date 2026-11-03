@@ -149,8 +149,8 @@ interface IDiesisPatron {
 
     event StakingAddressUpdated(address indexed newAddress);
 
-    /// @notice Accrue the block's total settled Patron fees into the burn accumulator exactly once, before block finalization.
-    /// @dev The Rust executor sums the actual fees it settled in this block and dispatches one system call. Requiring `blockNumber == block.number` and `blockNumber > lastAccruedBlock` makes double accrual unrepresentable, while canonical reorg rollback restores the prior latch and accumulator.
+    /// @notice Accrue the block's total settled Patron fees into the burn accumulator exactly once, before block finalization. dispatches one system call. Requiring `blockNumber == block.number` and `blockNumber > lastAccruedBlock` makes double accrual unrepresentable, while canonical reorg rollback restores the prior latch and accumulator.
+    /// @dev The Rust executor sums the actual fees it settled in this block and
     function accrueSettledBurnV2(uint64 blockNumber, uint256 totalActualFee) external;
 
     /// @notice Settled fees waiting for a best-effort burn outside consensus settlement. Updated once per block by the system-authorized `accrueSettledBurnV2`.
@@ -160,8 +160,8 @@ interface IDiesisPatron {
     /// @dev Use `bytes32(0)` to clear an assignment.
     function assignAccountGrant(address account, bytes32 grantId) external;
 
-    /// @notice Deterministic, owner-bound campaign id for a `(owner, salt)` pair.
-    /// @dev Binding the owner into the id means only that owner can register it, so a front-running registration cannot capture a victim's planned campaign.
+    /// @notice Deterministic, owner-bound campaign id for a `(owner, salt)` pair. so a front-running registration cannot capture a victim's planned campaign.
+    /// @dev Binding the owner into the id means only that owner can register it,
     function campaignIdFor(address owner, bytes32 salt) external pure returns (bytes32);
 
     /// @notice Current owner of a campaign, or zero if unregistered.
@@ -179,8 +179,8 @@ interface IDiesisPatron {
     /// @notice Reverse one reservation after pre-commit execution failure.
     function cancelGrantV2(bytes32 reservationId) external;
 
-    /// @notice Claim a signed campaign voucher, atomically assigning the campaign jar to the beneficiary and installing the exact bounded authorization.
-    /// @dev Callable only by the voucher's beneficiary. A bootstrap reserve for this same claim transaction may already have consumed the fresh authorization's first transaction and provisional spend, so the voucher bounds are held to at least what is already consumed and the counters are preserved: the claim transaction itself is the first sponsored draw.
+    /// @notice Claim a signed campaign voucher, atomically assigning the campaign jar to the beneficiary and installing the exact bounded authorization. this same claim transaction may already have consumed the fresh authorization's first transaction and provisional spend, so the voucher bounds are held to at least what is already consumed and the counters are preserved: the claim transaction itself is the first sponsored draw.
+    /// @dev Callable only by the voucher's beneficiary. A bootstrap reserve for
     function claimCampaignVoucherV1(CampaignVoucherV1 calldata voucher, bytes calldata signature) external;
 
     /// @notice Deposit native tokens into a grant identified by `grantId`.
@@ -229,8 +229,8 @@ interface IDiesisPatron {
     /// @notice View one in-flight reservation by its canonical id.
     function pendingReservations(bytes32 reservationId) external view returns (PendingReservationV2 memory reservation);
 
-    /// @notice Register a campaign, deriving an owner-bound id from `salt`.
-    /// @dev Permissionless and zero-value. The campaign id is `campaignIdFor(msg.sender, salt)`, so a foreign registration derives a different id and can never collide with — and capture — another account's planned campaign. Existing funding retains its contributor ownership. Funding remains the separate `contribute` action against `grantIdForCampaign(campaignId)`.
+    /// @notice Register a campaign, deriving an owner-bound id from `salt`. `campaignIdFor(msg.sender, salt)`, so a foreign registration derives a different id and can never collide with — and capture — another account's planned campaign. Existing funding retains its contributor ownership. Funding remains the separate `contribute` action against `grantIdForCampaign(campaignId)`.
+    /// @dev Permissionless and zero-value. The campaign id is
     /// @return campaignId The owner-bound campaign id now owned by the caller.
     function registerCampaignV1(bytes32 salt) external returns (bytes32 campaignId);
 
@@ -244,15 +244,15 @@ interface IDiesisPatron {
     /// @notice Gas overhead limits published for nodes to reserve gas for patronage checks
     function reserveGrantGasLimit() external view returns (uint256);
 
-    /// @notice Reserve a grant's maximum transaction fee before user execution. Only callable by the Rust node (msg.sender == address(0)).
-    /// @param reservationId Canonical transaction-derived reservation id. Reserve, settle, and cancel write only the selected grant, beneficiary authorization, and this unique reservation slot, so disjoint transactions never contend for a shared reservation cell.
+    /// @notice Reserve a grant's maximum transaction fee before user execution. Only callable by the Rust node (msg.sender == address(0)). settle, and cancel write only the selected grant, beneficiary authorization, and this unique reservation slot, so disjoint transactions never contend for a shared reservation cell.
+    /// @param reservationId Canonical transaction-derived reservation id. Reserve,
     function reserveGrantV2(bytes32 reservationId, address sender, address target, bytes calldata input, uint256 maximumFee) external returns (bytes32 grantId);
 
     /// @notice Determine which onboarding grant, if any, should cover this transaction's gas. Returns grantId or bytes32(0) if no patron found. Priority: account assignment > referral encore > welcome jar.
     function resolveGrant(address sender, address target, bytes calldata input, uint256 fee) external view returns (bytes32);
 
-    /// @notice Resolve a grant and return the effective jar and authorization bounds the node needs for pool-admission accounting in one system call.
-    /// @dev For an ordinary grant the bounds are the stored beneficiary authorization. For a campaign voucher claim (`target == this`) there is no stored authorization yet, so the bounds come from the voucher itself: the single bootstrap transaction is admitted against the voucher's declared maximum transactions and lifetime spend with zero already consumed.
+    /// @notice Resolve a grant and return the effective jar and authorization bounds the node needs for pool-admission accounting in one system call. authorization. For a campaign voucher claim (`target == this`) there is no stored authorization yet, so the bounds come from the voucher itself: the single bootstrap transaction is admitted against the voucher's declared maximum transactions and lifetime spend with zero already consumed.
+    /// @dev For an ordinary grant the bounds are the stored beneficiary
     function resolveGrantContext(address sender, address target, bytes calldata input, uint256 fee) external view returns (bytes32 grantId, uint256 jarBalance, uint32 maxTransactions, uint32 transactionsUsed, uint256 maxLifetimeSpend, uint256 lifetimeSpent);
 
     /// @notice Pre-burn one specific (beneficiary, nonce) voucher so it can never be claimed, without revoking the whole campaign.
@@ -277,8 +277,8 @@ interface IDiesisPatron {
 
     function settleGrantGasLimit() external view returns (uint256);
 
-    /// @notice Finalize one reservation at its actual transaction fee.
-    /// @dev Settlement updates jar and authorization accounting only. It does not return a value and never touches the shared burn accumulator; block-final `accrueSettledBurnV2` reduces settled fees into `accruedBurn` exactly once. This path performs no external calls and is total for every `actualFee <= maximumFee`.
+    /// @notice Finalize one reservation at its actual transaction fee. return a value and never touches the shared burn accumulator; block-final `accrueSettledBurnV2` reduces settled fees into `accruedBurn` exactly once. This path performs no external calls and is total for every `actualFee <= maximumFee`.
+    /// @dev Settlement updates jar and authorization accounting only. It does not
     function settleGrantV2(bytes32 reservationId, uint256 actualFee) external;
 
     /// @notice DiesisStaking address used by permissionless deferred burn flushing.
@@ -291,12 +291,12 @@ interface IDiesisPatron {
 
     function updateStakingAddress(address staking_) external;
 
-    /// @notice Reclaim a proportional share of a grant's remaining balance.
-    /// @dev A withdrawal during an active reservation is a complete contributor exit: it records every live reservation-time claim before removing the caller's live share. This prevents a later refund from moving to a contributor who was never exposed to that reservation.
+    /// @notice Reclaim a proportional share of a grant's remaining balance. exit: it records every live reservation-time claim before removing the caller's live share. This prevents a later refund from moving to a contributor who was never exposed to that reservation.
+    /// @dev A withdrawal during an active reservation is a complete contributor
     function withdrawContribution(bytes32 grantId, uint256 amount) external;
 
-    /// @notice Advance a contribution exit without traversing all held cohorts.
-    /// @dev Repeat until complete. Each call either compacts idle roots, resolves one dormant alias, or snapshots and exits one live cohort. Detached reservation claims remain separately withdrawable.
+    /// @notice Advance a contribution exit without traversing all held cohorts. resolves one dormant alias, or snapshots and exits one live cohort. Detached reservation claims remain separately withdrawable.
+    /// @dev Repeat until complete. Each call either compacts idle roots,
     function withdrawContributionStep(bytes32 grantId) external returns (bool complete);
 
     /// @notice Pull the settled or cancelled refund for one reservation-time contributor exit. Replay is rejected before any value is transferred.

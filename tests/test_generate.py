@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("generate", ROOT / "scripts/generate.py")
@@ -66,6 +67,32 @@ class GenerationTests(unittest.TestCase):
             binary.chmod(0o755)
             with self.assertRaisesRegex(ValueError, "expected one artifact for IDiesisMarkets.*found 0"):
                 generate.expected_files(Path(directory), ROOT / "canonical.json", str(binary))
+
+    def test_multiline_compiler_docs_generate_valid_line_comments(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "generation.json").write_text(json.dumps({"version": "0.8.0", "contracts": ["Simple"], "target": "solidity"}))
+            artifacts = root / "artifacts"
+            artifacts.mkdir()
+            (artifacts / "Simple.json").write_text(json.dumps({
+                "metadata": {"output": {"devdoc": {"methods": {
+                    "read()": {"details": "First line.\n * Second line.\n "}
+                }}}}
+            }))
+            binary = root / "typegen"
+            binary.write_text(
+                "#!/usr/bin/env python3\n"
+                "import json, sys\nfrom pathlib import Path\n"
+                "if sys.argv[1] == '--version': print('abi-typegen 0.8.0'); sys.exit()\n"
+                "source = next(Path(sys.argv[sys.argv.index('--artifacts') + 1]).rglob('Simple.json'))\n"
+                "doc = json.loads(source.read_text())['metadata']['output']['devdoc']['methods']['read()']['details']\n"
+                "out = Path(sys.argv[sys.argv.index('--out') + 1]); out.mkdir(parents=True)\n"
+                "(out / 'ISimple.sol').write_text('/// @dev ' + doc + '\\ninterface ISimple {}\\n')\n"
+            )
+            binary.chmod(0o755)
+            with patch.object(generate, "ROOT", root):
+                files = generate.expected_files(artifacts, ROOT / "canonical.json", str(binary))
+            self.assertEqual("/// @dev First line. Second line.\ninterface ISimple {}\n", files["src/interfaces/ISimple.sol"])
 
 
 if __name__ == "__main__":

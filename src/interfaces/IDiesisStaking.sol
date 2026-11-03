@@ -224,6 +224,7 @@ interface IDiesisStaking {
 
     event ValidatorSuspended(uint256 indexed validatorId, uint256 atCheckpoint, uint256 atTime, uint256 reason);
 
+    /// @notice for the `ForPosition` controller methods.
     function DIESIS_POSITION() external view returns (address);
 
     function EPOCH_AUTHORITY() external view returns (address);
@@ -278,13 +279,12 @@ interface IDiesisStaking {
 
     function activeRoleBundleId(uint256 validatorId) external view returns (bytes32);
 
-    /// @notice Returns the aggregate active stake across all validators.
     function aggregateActiveStake() external view returns (uint256);
 
     function aggregateStake() external view returns (uint256);
 
-    /// @notice Fund additional rewards for the currently open checkpoint.
-    /// @dev The active validator set for the open checkpoint must already be committed.      The full contribution leaves logical supply immediately; claims      re-add only the distributable portion, so `burned` is the net burn.
+    /// @notice Fund additional rewards for the currently open checkpoint.      The full contribution leaves logical supply immediately; claims      re-add only the distributable portion, so `burned` is the net burn.
+    /// @dev The active validator set for the open checkpoint must already be committed.
     function allocateExtraReward(uint256 checkpoint, bool withBurn) external payable;
 
     function anchorLotByNode(uint256) external view returns (uint256);
@@ -292,8 +292,6 @@ interface IDiesisStaking {
     /// @dev Gives permission to `to` to transfer `tokenId` token to another account. The approval is cleared when the token is transferred. Only a single account can be approved at a time, so approving the zero address clears previous approvals. Requirements: - The caller must own the token or be an approved operator. - `tokenId` must exist. Emits an {Approval} event.
     function approve(address to, uint256 tokenId) external;
 
-    /// @notice Approve the exact recovery pair previously configured by `oldAddress`.
-    /// @dev Callable only by the configured, non-zero independent recovery authorizer.
     function approveKeyRecovery(address oldAddress, address newAddress) external;
 
     /// @dev Returns the number of tokens in ``owner``'s account.
@@ -306,12 +304,10 @@ interface IDiesisStaking {
     /// @notice Bootstrap a validator at genesis (driver only).
     function bootstrapValidator(address auth, uint256 validatorId, bytes calldata pubkey, uint256 createdTime) external;
 
-    /// @notice Burn tokens by accepting msg.value and removing it from gross supply.
-    /// @dev The received value stays locked in this contract (no spend path exists for it), so decrementing grossSupply is what actually retires it from circulatingSupply(). The subtraction is clamped rather than reverting: burnTokens is on the patronage fee path (DiesisPatron._burnGrantFee), and a revert here would invalidate synchronous patron settlement for the transaction.
+    /// @notice Burn tokens by accepting msg.value and removing it from gross supply. for it), so decrementing grossSupply is what actually retires it from circulatingSupply(). The subtraction is clamped rather than reverting: burnTokens is on the patronage fee path (DiesisPatron._burnGrantFee), and a revert here would invalidate synchronous patron settlement for the transaction.
+    /// @dev The received value stays locked in this contract (no spend path exists
     function burnTokens() external payable;
 
-    /// @notice Cancel the caller's pending recovery and any approval for it.
-    /// @dev This remains available to the old key until the approved destination executes.
     function cancelKeyRecovery() external;
 
     function cancelPendingValidatorEpoch() external;
@@ -332,7 +328,7 @@ interface IDiesisStaking {
     /// @param tokenId The staking position NFT (owned by DiesisPosition).
     /// @param requestId The request identifier used in `requestUnstakeForPosition`.
     /// @param recipient The address to receive the payout.
-    /// @return payout   The amount of native tokens paid out.
+    /// @return payout The amount of native tokens paid out.
     function completeUnstakeForPosition(uint256 tokenId, uint256 requestId, address recipient) external returns (uint256 payout);
 
     /// @notice Re-stake pending rewards into the same position. Caller must own the position NFT.
@@ -353,8 +349,6 @@ interface IDiesisStaking {
 
     function epochIdentityPage(uint64 epoch, uint256 cursor, uint256 limit) external view returns (ValidatorIdentityV1[] memory);
 
-    /// @notice Replace `oldAddress` as validator operator with the caller.
-    /// @dev The caller must be the exact approved destination and must not already operate a validator.
     function executeKeyRecovery(address oldAddress) external;
 
     /// @notice Unstake requests keyed by (tokenId => requestID => request)
@@ -378,7 +372,7 @@ interface IDiesisStaking {
     /// @notice Harvest rewards and send to recipient.
     /// @param tokenId The staking position NFT (owned by DiesisPosition).
     /// @param recipient The address to receive the rewards.
-    /// @return reward   The amount of rewards harvested.
+    /// @return reward The amount of rewards harvested.
     function harvestRewardsForPosition(uint256 tokenId, address recipient) external returns (uint256 reward);
 
     /// @notice Add stake to an existing staking position controlled by DiesisPosition.
@@ -458,8 +452,8 @@ interface IDiesisStaking {
     /// @dev The oracle calls this atomically with its capped balance credits.
     function recordBootstrapMint(uint256 amount) external;
 
-    /// @notice Account for one committed block's ordinary fees already credited by the node.
-    /// @dev Transaction settlement credits the full charged fee into locked staking custody. Sponsored fees remain in Patron and must never enter this route. The system caller attests the ordinary fee total; the balance bound is an additional consistency check, not a replacement for execution validation because staking also holds stake deposits.
+    /// @notice Account for one committed block's ordinary fees already credited by the node. Sponsored fees remain in Patron and must never enter this route. The system caller attests the ordinary fee total; the balance bound is an additional consistency check, not a replacement for execution validation because staking also holds stake deposits.
+    /// @dev Transaction settlement credits the full charged fee into locked staking custody.
     function recordCheckpointFees(uint256 checkpoint, uint256 blockNumber, uint256 fee) external;
 
     function recordEpochCertificationBoundary(uint64 boundaryNumber, bytes32 boundaryParentHash, bytes32 checkpointDigest) external returns (bool recorded);
@@ -468,7 +462,7 @@ interface IDiesisStaking {
 
     /// @notice Register a new validator with a public key.
     /// @return validatorId the new validator ID
-    /// @return tokenId     the operator bond position NFT minted to msg.sender
+    /// @return tokenId the operator bond position NFT minted to msg.sender
     function registerValidator(bytes calldata pubkey) external payable returns (uint256 validatorId, uint256 tokenId);
 
     function registerValidatorRoleKeys(uint256 validatorId, uint64 targetEpoch, RoleKeyBundle calldata keys, RoleProofBundle calldata proofs) external returns (bytes32 bundleId);
@@ -494,10 +488,10 @@ interface IDiesisStaking {
 
     function roleKeyBundle(bytes32 bundleId) external view returns (RoleKeyBundle memory);
 
-    /// @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients are aware of the ERC-721 protocol to prevent tokens from being forever locked. Requirements: - `from` cannot be the zero address. - `to` cannot be the zero address. - `tokenId` token must exist and be owned by `from`. - If the caller is not `from`, it must have been allowed to move this token by either {approve} or   {setApprovalForAll}. - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon   a safe transfer. Emits a {Transfer} event.
+    /// @dev Safely transfers `tokenId` token from `from` to `to`, checking first that contract recipients are aware of the ERC-721 protocol to prevent tokens from being forever locked. Requirements: - `from` cannot be the zero address. - `to` cannot be the zero address. - `tokenId` token must exist and be owned by `from`. - If the caller is not `from`, it must have been allowed to move this token by either {approve} or {setApprovalForAll}. - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer. Emits a {Transfer} event.
     function safeTransferFrom(address from, address to, uint256 tokenId) external;
 
-    /// @dev Safely transfers `tokenId` token from `from` to `to`. Requirements: - `from` cannot be the zero address. - `to` cannot be the zero address. - `tokenId` token must exist and be owned by `from`. - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}. - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon   a safe transfer. Emits a {Transfer} event.
+    /// @dev Safely transfers `tokenId` token from `from` to `to`. Requirements: - `from` cannot be the zero address. - `to` cannot be the zero address. - `tokenId` token must exist and be owned by `from`. - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}. - If `to` refers to a smart contract, it must implement {IERC721Receiver-onERC721Received}, which is called upon a safe transfer. Emits a {Transfer} event.
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) external;
 
     function scheduleValidatorEpoch(uint64 activationBlockNumber) external;
@@ -508,8 +502,8 @@ interface IDiesisStaking {
     /// @notice Configuration is bound once by initialization or canonical genesis storage.
     function setConfigContract(address configContract) external;
 
-    /// @notice Schedule an operator reward cut change for a validator.
-    /// @dev Takes effect after the next checkpoint finalization (1-checkpoint cooldown).      Only callable by the validator's authority address.      Rate is capped at 20% (OPERATOR_TAKE_RATE_UPPER from DiesisConfig).      Upward changes are capped at 1 percentage point per checkpoint; reductions      can be scheduled immediately.
+    /// @notice Schedule an operator reward cut change for a validator.      Only callable by the validator's authority address.      Rate is capped at 20% (OPERATOR_TAKE_RATE_UPPER from DiesisConfig).      Upward changes are capped at 1 percentage point per checkpoint; reductions      can be scheduled immediately.
+    /// @dev Takes effect after the next checkpoint finalization (1-checkpoint cooldown).
     /// @param validatorId The validator to update.
     /// @param rate The new operator cut as a fraction of 1e18 (e.g. 0.2e18 = 20%).
     function setOperatorTakeRate(uint256 validatorId, uint256 rate) external;
@@ -539,11 +533,6 @@ interface IDiesisStaking {
     /// @return tokenId The newly minted staking position NFT (owned by DiesisPosition).
     function stakeForPosition(uint256 toValidatorId) external payable returns (uint256 tokenId);
 
-    /// @notice Returns (validatorId, amount, entryCheckpoint) for a stake lot.
-    /// @param tokenId The ERC-721 stake lot to query.
-    /// @return validatorId The validator the position delegates to.
-    /// @return stakeAmount Current delegated amount in wei.
-    /// @return entryCheckpoint  Checkpoint when position was created.
     function stakeLots(uint256 tokenId) external view returns (uint256 validatorId, uint256 stakeAmount, uint256 entryCheckpoint);
 
     function stakeObserver() external view returns (address);

@@ -24,11 +24,11 @@ interface IDiesisOperatorBond {
     /// @notice Read the public bond record for `marketId`.
     function getBond(bytes32 marketId) external view returns (BondInfo memory);
 
-    /// @notice Post the operator bond for `marketId` with `msg.value` DS.
-    /// @dev `msg.value` must equal exactly 50,000 DS. Reverts if a bond already      exists for `marketId`.
+    /// @notice Post the operator bond for `marketId` with `msg.value` DS.      exists for `marketId`.
+    /// @dev `msg.value` must equal exactly 50,000 DS. Reverts if a bond already
     function postBond(bytes32 marketId) external payable;
 
-    /// @notice Request voluntary release of the bond.
-    /// @dev Subject to a 30-day timelock. Pending claims against the backstop      must be resolved before the operator can finalize.
+    /// @notice Request voluntary release of the bond.      must be resolved before the operator can finalize.
+    /// @dev Subject to a 30-day timelock. Pending claims against the backstop
     function requestRelease(bytes32 marketId) external;
 }

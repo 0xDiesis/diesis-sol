@@ -32,7 +32,7 @@ interface IDiesisConductors {
     /// @dev `msg.value` is added to the caller's bond. Tier reflects the new total immediately.
     function registerOrTopup() external payable;
 
-    /// @notice Signal intent to decrease bond by `amount`.
-    /// @dev Tier is recomputed against the post-decrease bond immediately (spec §5.6).      The refund is redeemable via `finalizeDecrease` after a 7-day timelock.
+    /// @notice Signal intent to decrease bond by `amount`.      The refund is redeemable via `finalizeDecrease` after a 7-day timelock.
+    /// @dev Tier is recomputed against the post-decrease bond immediately (spec §5.6).
     function requestDecrease(uint256 amount) external;
 }

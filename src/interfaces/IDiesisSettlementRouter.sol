@@ -26,8 +26,8 @@ interface IDiesisSettlementRouter {
 
     event TokenAllowlistUpdated(address indexed token, bool allowed);
 
-    /// @notice Deposit `amount` of `token`, crediting `beneficiary`'s settlement         balance.
-    /// @dev Pulls tokens from `msg.sender` into router custody, verifies the      exact received amount, then credits the settlement ledger. A      balance-delta mismatch reverts before any ledger mutation.
+    /// @notice Deposit `amount` of `token`, crediting `beneficiary`'s settlement         balance.      exact received amount, then credits the settlement ledger. A      balance-delta mismatch reverts before any ledger mutation.
+    /// @dev Pulls tokens from `msg.sender` into router custody, verifies the
     /// @param token The allowlisted ERC-20 token.
     /// @param amount The amount to pull from the caller.
     /// @param beneficiary The settlement account to credit.
@@ -40,8 +40,8 @@ interface IDiesisSettlementRouter {
     /// @dev Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner.
     function renounceOwnership() external;
 
-    /// @notice Add or remove a token from the standard-collateral allowlist.
-    /// @dev PRECONDITION: governance MUST only admit a token that is standard      ERC-20, exact-balance-accounted, and neither fee-on-transfer nor      rebasing (no supply-elastic or balance-mutating hooks). The router's      single-transaction delta checks catch synchronous fee/rebase      behavior, but an asynchronously rebasing token can still render      pooled custody insolvent; admitting one is a governance error that      only the vetting at admission time can prevent.
+    /// @notice Add or remove a token from the standard-collateral allowlist.      ERC-20, exact-balance-accounted, and neither fee-on-transfer nor      rebasing (no supply-elastic or balance-mutating hooks). The router's      single-transaction delta checks catch synchronous fee/rebase      behavior, but an asynchronously rebasing token can still render      pooled custody insolvent; admitting one is a governance error that      only the vetting at admission time can prevent.
+    /// @dev PRECONDITION: governance MUST only admit a token that is standard
     /// @param token The ERC-20 token address.
     /// @param allowed Whether the token may be deposited and withdrawn.
     function setTokenAllowed(address token, bool allowed) external;
@@ -58,8 +58,8 @@ interface IDiesisSettlementRouter {
     /// @dev Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner.
     function transferOwnership(address newOwner) external;
 
-    /// @notice Withdraw `amount` of `token` from the caller's settlement balance         to `recipient`.
-    /// @dev Debits the settlement ledger and the aggregate liability first, then      releases custody. A failed token transfer reverts both mutations      atomically. Verifies the exact released amount against BOTH the      router's balance delta and the recipient's balance delta: the      recipient-delta check rejects outbound fee-on-transfer tokens that      would deliver less than the debited amount. An asynchronous shortfall      in pooled custody makes the releasing transfer revert on insufficient      balance, so the withdrawal fails closed for the affected caller      rather than corrupting other users' balances.
+    /// @notice Withdraw `amount` of `token` from the caller's settlement balance         to `recipient`.      releases custody. A failed token transfer reverts both mutations      atomically. Verifies the exact released amount against BOTH the      router's balance delta and the recipient's balance delta: the      recipient-delta check rejects outbound fee-on-transfer tokens that      would deliver less than the debited amount. An asynchronous shortfall      in pooled custody makes the releasing transfer revert on insufficient      balance, so the withdrawal fails closed for the affected caller      rather than corrupting other users' balances.
+    /// @dev Debits the settlement ledger and the aggregate liability first, then
     /// @param token The allowlisted ERC-20 token.
     /// @param amount The amount to debit and release.
     /// @param recipient The address that receives the released tokens.
