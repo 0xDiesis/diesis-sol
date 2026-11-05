@@ -129,3 +129,6 @@ They do not require a node and do not validate live deployments.
 ## License
 
 MIT
+
+For a build stored outside the source checkout, set `DIESIS_ARTIFACTS_DIR`
+to the compiled artifact directory. The generator uses it instead of `out/`.

@@ -122,7 +122,7 @@ def main() -> int:
     parser.add_argument("--canonical", type=Path, help="canonical.json source")
     args = parser.parse_args()
     contracts = Path(os.environ.get("DIESIS_CONTRACTS_DIR", ROOT / "../../diesis-core/diesis/contracts")).resolve()
-    artifacts = args.artifacts or contracts / "out"
+    artifacts = args.artifacts or Path(os.environ.get("DIESIS_ARTIFACTS_DIR", contracts / "out"))
     sibling = ROOT.parent / "diesis-js/canonical.json"
     canonical = args.canonical or Path(os.environ.get("DIESIS_CANONICAL_FILE", sibling if sibling.exists() else ROOT / "canonical.json"))
     try:

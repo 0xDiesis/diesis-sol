@@ -351,6 +351,9 @@ interface IDiesisStaking {
 
     function executeKeyRecovery(address oldAddress) external;
 
+    /// @notice Monotonic exit-request sequence captured with each scheduled stake snapshot.
+    function exitSequence() external view returns (uint64);
+
     /// @notice Unstake requests keyed by (tokenId => requestID => request)
     function exitTickets(uint256, uint256) external view returns (uint128 amount, uint48 validatorId, uint40 checkpoint, uint40 timestamp);
 
@@ -399,6 +402,9 @@ interface IDiesisStaking {
     function lastFeeAccrualBlock() external view returns (uint256);
 
     function latestFinalizedCheckpoint() external view returns (uint256);
+
+    /// @notice Merge controller-owned lots, including entitlement earned in the open checkpoint.
+    function mergeStakeForPosition(uint256 fromTokenId, uint256 toTokenId) external;
 
     /// @notice Create an empty staking position for atomic splits (controller version).
     /// @param validatorId The validator the new position is assigned to.
@@ -460,12 +466,18 @@ interface IDiesisStaking {
 
     function recoveryAuthorizer() external view returns (address);
 
+    /// @notice Approval epoch; rotating the authorizer revokes its outstanding approvals.
+    function recoveryAuthorizerGeneration() external view returns (uint256);
+
     /// @notice Register a new validator with a public key.
     /// @return validatorId the new validator ID
     /// @return tokenId the operator bond position NFT minted to msg.sender
     function registerValidator(bytes calldata pubkey) external payable returns (uint256 validatorId, uint256 tokenId);
 
     function registerValidatorRoleKeys(uint256 validatorId, uint64 targetEpoch, RoleKeyBundle calldata keys, RoleProofBundle calldata proofs) external returns (bytes32 bundleId);
+
+    /// @notice Bounded current registrations; retired IDs retain their original custody ledgers.
+    function registeredValidatorIds() external view returns (uint256[] memory);
 
     /// @dev Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner.
     function renounceOwnership() external;
