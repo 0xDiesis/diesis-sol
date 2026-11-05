@@ -67,7 +67,7 @@ def normalize_natspec(value):
 
 def typegen_artifact(path: Path) -> dict:
     artifact = json.loads(path.read_text())
-    # Solar preserves multiline NatSpec. abi-typegen 0.8.0 emits each doc field
+    # Solar preserves multiline NatSpec. abi-typegen 0.9.1 emits each doc field
     # as one /// comment, so normalize only documentation in its temporary input.
     for key in ("metadata", "rawMetadata"):
         metadata = artifact.get(key)

@@ -5,7 +5,7 @@ Diesis. Install this SDK on its own. You do not need the node, system contract
 implementations, or their dependencies to compile your application.
 
 The SDK contains 29 public contract interfaces generated with
-[abi-typegen](https://github.com/doublesharp/abi-typegen) **0.8.0**, including
+[abi-typegen](https://github.com/doublesharp/abi-typegen) **0.9.1**, including
 their tuple structs, events, errors, overloads, and payable/view declarations.
 `DiesisAddresses` contains every address in the same `canonical.json` used by
 [diesis-js](https://github.com/0xDiesis/diesis-js). `DiesisChains.MAINNET` is
@@ -89,7 +89,7 @@ cd "$DIESIS_CONTRACTS_DIR"
 ./scripts/forge.sh build src --skip test --skip script
 ```
 
-From this SDK's root, with exact abi-typegen 0.8.0 on PATH:
+From this SDK's root, with exact abi-typegen 0.9.1 on PATH:
 
 ```sh
 python3 scripts/generate.py

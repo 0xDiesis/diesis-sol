@@ -48,9 +48,9 @@ interface IDiesisNameVerifier {
 
     function attestationHash(NameAttestation calldata attestation) external pure returns (bytes32);
 
-    function attestations(bytes32 attestationId) external view returns (Attestation memory);
-
     function attestations(bytes32 node, bytes32 attestationType) external view returns (bytes32[] memory);
+
+    function attestations(bytes32 attestationId) external view returns (Attestation memory);
 
     function isAttested(bytes32 node, bytes32 attestationType, address issuer) external view returns (bool);
 

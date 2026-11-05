@@ -109,9 +109,9 @@ interface IDiesisPublicResolver {
 
     function routeRecord(bytes32 node, bytes32 routeId) external view returns (RouteRecord memory);
 
-    function setAddr(bytes32 node, address value) external;
-
     function setAddr(bytes32 node, uint256 coinType, bytes calldata value) external;
+
+    function setAddr(bytes32 node, address value) external;
 
     function setAgentRecord(bytes32 node, bytes32 agentId, AgentRecord calldata record) external;
 
