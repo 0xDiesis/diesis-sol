@@ -12,6 +12,8 @@ interface IDiesisMarkets {
 
     event MarketCreated(bytes32 indexed marketId, address baseToken, address quoteToken, uint8 marketType);
 
+    event MarketPricingDefinedV1(bytes32 indexed marketId, uint8 pricingVersion, uint64 priceDenominator);
+
     /// @dev System-only. Market must exist and `referencePrice` must be nonzero.
     function checkCircuitBreaker(bytes32 marketId, uint256 currentPrice, uint256 referencePrice, uint256 thresholdBps) external returns (uint256 tripped);
 
@@ -19,10 +21,18 @@ interface IDiesisMarkets {
     /// @dev Legacy provisioning requires the current Config owner. Public issuance
     function createSpotMarket(address baseToken, address quoteToken, uint64 tickSize, uint64 lotSize, uint256 bond) external returns (bytes32 marketId);
 
+    /// @notice positive and divides lotSize exactly; identity commits it independently of legacy markets, including when denominator equals one.
+    /// @dev Config-owner provisioning of immutable Spot V1 units. Denominator is
+    function createSpotMarketV1(address baseToken, address quoteToken, uint64 tickSize, uint64 lotSize, uint64 priceDenominator, uint256 bond) external returns (bytes32 marketId);
+
     /// @dev Deploys a token through the factory and creates its USDC spot market atomically.
     function deployTokenAndSpotBook(bytes11 symbol, string calldata name, uint256 initialSupply, uint256 dsBond, uint256 usdcFee) external returns (bytes32 marketId, address token);
 
     function getMarket(bytes32 marketId) external view returns (PackedMarket memory market);
+
+    /// @notice Unknown or corrupt definitions revert. Legacy markets return (0,1).
+    /// @dev Validates the full immutable pricing definition and market identity.
+    function getMarketPricing(bytes32 marketId) external view returns (uint8 pricingVersion, uint64 priceDenominator);
 
     function resumeMarket(bytes32 marketId) external returns (uint256 success);
 }

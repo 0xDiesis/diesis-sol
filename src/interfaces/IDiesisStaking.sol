@@ -21,6 +21,7 @@ interface IDiesisStaking {
         uint64 votingPower;
         bytes blsPublicKey;
         bytes blsProofOfPossession;
+        bytes32 mlDsaPublicKeyHash;
         bytes vrfPublicKey;
         address quicTransportAddress;
         address relayerAddress;
@@ -51,6 +52,7 @@ interface IDiesisStaking {
         address consensusAddress;
         bytes blsPublicKey;
         bytes blsProofOfPossession;
+        bytes32 mlDsaPublicKeyHash;
         bytes vrfPublicKey;
         address quicTransportAddress;
         address relayerAddress;
@@ -58,7 +60,9 @@ interface IDiesisStaking {
 
     struct RoleProofBundle {
         bytes consensusSignature;
-        bytes blsContextSignature;
+        bytes blsKeyBindingSignature;
+        bytes mlDsaPublicKey;
+        bytes mlDsaKeyBindingSignature;
         uint256 vrfX;
         uint256 vrfY;
         bytes vrfSignature;

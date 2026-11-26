@@ -5,7 +5,7 @@ Diesis. Install this SDK on its own. You do not need the node, system contract
 implementations, or their dependencies to compile your application.
 
 The SDK contains 29 public contract interfaces generated with
-[abi-typegen](https://github.com/doublesharp/abi-typegen) **0.9.1**, including
+[abi-typegen](https://github.com/doublesharp/abi-typegen) **0.9.3**, including
 their tuple structs, events, errors, overloads, and payable/view declarations.
 `DiesisAddresses` contains every address in the same `canonical.json` used by
 [diesis-js](https://github.com/0xDiesis/diesis-js). `DiesisChains.MAINNET` is
@@ -79,8 +79,8 @@ implementation ABIs receive one, so `DiesisStaking` generates `IDiesisStaking.so
 
 ## Regenerate from source
 
-Only SDK maintainers need the contracts checkout. In the full workspace the
-default is `../../diesis-core/diesis/contracts`. For a standalone SDK checkout,
+`generation.json` pins the contracts revision, compiler, and generator release.
+In the full workspace the default contracts checkout is `../../diesis-core/diesis/contracts`. For a standalone SDK checkout,
 point `DIESIS_CONTRACTS_DIR` to the contracts directory of a source checkout.
 Build that source with its repository's compiler wrapper before regeneration:
 
@@ -89,7 +89,7 @@ cd "$DIESIS_CONTRACTS_DIR"
 ./scripts/forge.sh build src --skip test --skip script
 ```
 
-From this SDK's root, with exact abi-typegen 0.9.1 on PATH:
+From this SDK's root, with exact abi-typegen 0.9.3 on PATH:
 
 ```sh
 python3 scripts/generate.py
@@ -99,8 +99,8 @@ python3 scripts/generate.py --check
 `ABI_TYPEGEN` selects a generator executable. `--artifacts` selects a custom
 source build output directory. The generator reads those build artifacts
 directly, writes only Solidity interfaces and constants, and never copies JSON
-ABI files into this repository. Missing or ambiguous contract artifacts and
-other generator versions fail before it changes SDK files. `--check` reports
+ABI files into this repository. Generation verifies the compiler version and ABI
+hash for each selected contract before it changes SDK files. `--check` reports
 missing, changed, or removed interfaces without writing SDK files.
 
 Canonical constants default to `../diesis-js/canonical.json` in the workspace

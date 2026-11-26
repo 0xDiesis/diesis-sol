@@ -22,9 +22,13 @@ interface IDiesisPerpsBook {
 
     event OrderCancelled(bytes32 indexed orderId, bytes32 indexed marketId, address indexed trader);
 
+    event OrderFillFeeV1(bytes32 indexed marketId, bytes32 indexed orderId, address indexed trader, address feeToken, uint256 chargedRaw, uint256 rebateCreditedRaw);
+
     event OrderFilled(bytes32 indexed orderId, bytes32 indexed marketId, address indexed trader, uint256 fillQty, uint256 fillPrice, uint256 remainingAmount, bool complete);
 
     event OrderPlaced(bytes32 indexed orderId, bytes32 indexed marketId, address indexed trader, uint8 side, uint256 price, uint256 amount, uint8 flags);
+
+    event PerpMaintenanceFault(bytes32 indexed marketId, bytes4 selector, bytes32 reasonHash);
 
     event PositionClosed(bytes32 indexed marketId, address indexed trader, int256 realizedPnl);
 

@@ -2,6 +2,8 @@
 pragma solidity >=0.8.0;
 
 interface IDiesisNameRegistry {
+    error InvalidSubnameLabel();
+
     error NotAuthorized();
 
     error ZeroOwner();
@@ -17,6 +19,8 @@ interface IDiesisNameRegistry {
     event OwnerChanged(bytes32 indexed node, address indexed owner);
 
     event ResolverChanged(bytes32 indexed node, address indexed resolver);
+
+    event SubnameLabel(bytes32 indexed parent, bytes32 indexed node, string label);
 
     event TTLChanged(bytes32 indexed node, uint64 ttl);
 
@@ -52,7 +56,11 @@ interface IDiesisNameRegistry {
 
     function setSubnodeOwner(bytes32 node, bytes32 label, address owner_) external returns (bytes32);
 
+    function setSubnodeOwnerWithLabel(bytes32 node, string calldata label, address owner_) external returns (bytes32);
+
     function setSubnodeRecord(bytes32 node, bytes32 label, address owner_, address resolver_, uint64 ttl_, uint64 expiry_) external returns (bytes32);
+
+    function setSubnodeRecordWithLabel(bytes32 node, string calldata label, address owner_, address resolver_, uint64 ttl_, uint64 expiry_) external returns (bytes32);
 
     function setTTL(bytes32 node, uint64 ttl_) external;
 

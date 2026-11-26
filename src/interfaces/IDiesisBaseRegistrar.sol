@@ -16,6 +16,8 @@ interface IDiesisBaseRegistrar {
 
     error InvalidLabel();
 
+    error LookalikeName(bytes32 heldBy);
+
     error NameUnavailable();
 
     error OwnableInvalidOwner(address owner);
@@ -92,6 +94,10 @@ interface IDiesisBaseRegistrar {
 
     function gracePeriod() external view returns (uint256);
 
+    function labelSkeleton(string calldata label) external pure returns (string memory);
+
+    function lookalikeHolder(string calldata label) external view returns (bytes32);
+
     function maintenance() external view returns (address);
 
     function maintenanceShare() external view returns (uint256);
@@ -117,6 +123,9 @@ interface IDiesisBaseRegistrar {
 
     function register(string calldata label, address owner_, address resolver_, uint64 duration, bytes32 secret, bool reverseRecord, uint256 nonce, bytes[] calldata resolverCalls) external payable returns (bytes32 node);
 
+    /// @notice Most recently registered label for each lookalike skeleton hash.
+    function registeredSkeletonHolders(bytes32 skeletonHash) external view returns (bytes32 labelhash);
+
     function registry() external view returns (address);
 
     function renew(string calldata label, uint64 duration) external payable returns (uint64 expiry);
@@ -127,6 +136,9 @@ interface IDiesisBaseRegistrar {
     function rentPrice(string calldata label, uint64 duration) external view returns (uint256);
 
     function reservedLabels(bytes32 labelhash) external view returns (bool reserved);
+
+    /// @notice Reserved label currently claiming each lookalike skeleton hash.
+    function reservedSkeletonHolders(bytes32 skeletonHash) external view returns (bytes32 labelhash);
 
     function reverseRegistrar() external view returns (address);
 

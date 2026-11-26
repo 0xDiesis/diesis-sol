@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -55,6 +56,28 @@ def sync_files(root: Path, files: dict[str, str], check: bool) -> list[str]:
     return problems
 
 
+def verify_artifact(artifact: dict, name: str, config: dict) -> None:
+    metadata = artifact.get("rawMetadata", artifact.get("metadata"))
+    if isinstance(metadata, str):
+        metadata = json.loads(metadata)
+    if metadata["compiler"]["version"] != config["compilerVersion"]:
+        raise ValueError(f"compiler version mismatch for {name}")
+
+    def canonical(value):
+        return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+    # Match the normalized ABI hashes in the SDKs' contracts provenance manifest.
+    entries = [dict(entry) for entry in artifact["abi"]]
+    for entry in entries:
+        if entry.get("outputs") == []:
+            entry.pop("outputs")
+        if entry.get("type") in ("receive", "fallback") and entry.get("inputs") == []:
+            entry.pop("inputs")
+    digest = hashlib.sha256(canonical(sorted(entries, key=canonical)).encode()).hexdigest()
+    if digest != config["abiSha256"][name]:
+        raise ValueError(f"ABI hash mismatch for {name} at {config['contractsRevision']}")
+
+
 def normalize_natspec(value):
     if isinstance(value, dict):
         return {key: normalize_natspec(entry) for key, entry in value.items()}
@@ -65,9 +88,8 @@ def normalize_natspec(value):
     return value
 
 
-def typegen_artifact(path: Path) -> dict:
-    artifact = json.loads(path.read_text())
-    # Solar preserves multiline NatSpec. abi-typegen 0.9.1 emits each doc field
+def typegen_artifact(artifact: dict) -> dict:
+    # Solar preserves multiline NatSpec. The renderer emits each doc field
     # as one /// comment, so normalize only documentation in its temporary input.
     for key in ("metadata", "rawMetadata"):
         metadata = artifact.get(key)
@@ -100,7 +122,9 @@ def expected_files(artifacts: Path, canonical_path: Path, binary: str) -> dict[s
                 raise ValueError(f"expected one artifact for {name} in {artifacts}; found {len(matches)}")
             target = inputs / f"{name}.sol" / f"{name}.json"
             target.parent.mkdir(parents=True)
-            target.write_text(json.dumps(typegen_artifact(matches[0])))
+            artifact = json.loads(matches[0].read_text())
+            verify_artifact(artifact, name, config)
+            target.write_text(json.dumps(typegen_artifact(artifact)))
         output = temp / "generated"
         subprocess.run([binary, "generate", "--artifacts", str(inputs), "--contracts", ",".join(config["contracts"]), "--target", config["target"], "--out", str(output)], check=True)
         produced = {path.name: path for path in output.rglob("*.sol")}
@@ -128,7 +152,7 @@ def main() -> int:
     try:
         files = expected_files(artifacts.resolve(), canonical.resolve(), os.environ.get("ABI_TYPEGEN", "abi-typegen"))
         problems = sync_files(ROOT, files, args.check)
-    except (OSError, ValueError, KeyError, subprocess.CalledProcessError) as error:
+    except (OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as error:
         parser.exit(1, f"generation failed: {error}\n")
     if args.check and problems:
         parser.exit(1, "\n".join(problems) + "\nrun: python3 scripts/generate.py\n")

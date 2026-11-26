@@ -1,4 +1,5 @@
 import importlib.util
+import hashlib
 import json
 from pathlib import Path
 import tempfile
@@ -57,13 +58,13 @@ class GenerationTests(unittest.TestCase):
             binary = Path(directory) / "typegen"
             binary.write_text("#!/usr/bin/env python3\nprint('abi-typegen 0.7.0')\n")
             binary.chmod(0o755)
-            with self.assertRaisesRegex(ValueError, "0.9.1 is required"):
+            with self.assertRaisesRegex(ValueError, "0.9.3 is required"):
                 generate.expected_files(Path(directory), ROOT / "canonical.json", str(binary))
 
     def test_missing_source_artifacts_are_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             binary = Path(directory) / "typegen"
-            binary.write_text("#!/usr/bin/env python3\nprint('abi-typegen 0.9.1')\n")
+            binary.write_text("#!/usr/bin/env python3\nprint('abi-typegen 0.9.3')\n")
             binary.chmod(0o755)
             with self.assertRaisesRegex(ValueError, "expected one artifact for IDiesisMarkets.*found 0"):
                 generate.expected_files(Path(directory), ROOT / "canonical.json", str(binary))
@@ -71,19 +72,31 @@ class GenerationTests(unittest.TestCase):
     def test_multiline_compiler_docs_generate_valid_line_comments(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / "generation.json").write_text(json.dumps({"version": "0.9.1", "contracts": ["Simple"], "target": "solidity"}))
+            config = {
+                "version": "0.9.3",
+                "target": "solidity",
+                "contracts": ["Simple"],
+                "contractsRevision": "test revision",
+                "compilerVersion": "test compiler",
+                "abiSha256": {"Simple": hashlib.sha256(b"[]").hexdigest()},
+            }
+            (root / "generation.json").write_text(json.dumps(config))
             artifacts = root / "artifacts"
             artifacts.mkdir()
             (artifacts / "Simple.json").write_text(json.dumps({
-                "metadata": {"output": {"devdoc": {"methods": {
-                    "read()": {"details": "First line.\n * Second line.\n "}
-                }}}}
+                "abi": [],
+                "metadata": {
+                    "compiler": {"version": config["compilerVersion"]},
+                    "output": {"devdoc": {"methods": {
+                        "read()": {"details": "First line.\n * Second line.\n "}
+                    }}},
+                },
             }))
             binary = root / "typegen"
             binary.write_text(
                 "#!/usr/bin/env python3\n"
                 "import json, sys\nfrom pathlib import Path\n"
-                "if sys.argv[1] == '--version': print('abi-typegen 0.9.1'); sys.exit()\n"
+                "if sys.argv[1] == '--version': print('abi-typegen 0.9.3'); sys.exit()\n"
                 "source = next(Path(sys.argv[sys.argv.index('--artifacts') + 1]).rglob('Simple.json'))\n"
                 "doc = json.loads(source.read_text())['metadata']['output']['devdoc']['methods']['read()']['details']\n"
                 "out = Path(sys.argv[sys.argv.index('--out') + 1]); out.mkdir(parents=True)\n"
@@ -93,6 +106,15 @@ class GenerationTests(unittest.TestCase):
             with patch.object(generate, "ROOT", root):
                 files = generate.expected_files(artifacts, ROOT / "canonical.json", str(binary))
             self.assertEqual("/// @dev First line. Second line.\ninterface ISimple {}\n", files["src/interfaces/ISimple.sol"])
+
+    def test_unpinned_abi_is_rejected(self):
+        config = json.loads((ROOT / "generation.json").read_text())
+        artifact = {
+            "abi": [],
+            "metadata": {"compiler": {"version": config["compilerVersion"]}},
+        }
+        with self.assertRaisesRegex(ValueError, "ABI hash mismatch for IDiesisMarkets"):
+            generate.verify_artifact(artifact, "IDiesisMarkets", config)
 
 
 if __name__ == "__main__":

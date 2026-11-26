@@ -1,6 +1,12 @@
 {
-  "version": "0.9.1",
+  "version": "0.9.3",
   "target": "solidity",
+  "contractsRevision": "f0f9df1408efcf9bd8b996266ec91504e5e1e372",
+  "compilerVersion": "0.8.38+commit.e7a91fc7.solar.0.3.0",
+  "generator": {
+    "sourceCommit": "fbf6f7468c952863f2318a450520ac0933cbd65d",
+    "packageIntegrity": "sha512-65WfWmjtwff3cP031oVM1ARmyFmeCuLvTPOjHzUccVYA+4nmbym5BzARO8oLkvhTQIwsXVDJlx1CZuOItdUHkg=="
+  },
   "contracts": [
     "IDiesisMarkets",
     "IDiesisSpotBook",
@@ -31,5 +37,36 @@
     "IDiesisReverseRegistrar",
     "IDiesisNameVerifier",
     "IDiesisNamePolicy"
-  ]
+  ],
+  "abiSha256": {
+    "IDiesisMarkets": "e53882da70c716b1f448b1fc792498bae1eeb1c5ab6a524e830683f317543edc",
+    "IDiesisSpotBook": "9fb6d8775769928aabc1d307551d6c2dea6a5422cdc36c1fad0ae48b89beed28",
+    "IDiesisPerpsBook": "54e044c36613828670fb84319fdd7ff5feeea7299a7c3b188117954f1cfe0f11",
+    "IDiesisMargin": "96112a5bbbacf380a89bdf0a61d1121e96b3a4c87ae1bf586cb051916d551ff6",
+    "IDiesisSettlement": "f9d50a164d685e4ad16a89464f6000ef406326e8e0ff8ba40fbb8126aca69915",
+    "DiesisSettlementRouter": "cf125f1953bbdebaf6b21a1cce6ad8556659f1a14fae5f5bf35eee7656fd5dd8",
+    "IDiesisConductors": "e2cb92ebe10b3ac9112bc1d6158209f22d08b8f184c10851c2b58f258e051c6d",
+    "IDiesisErc20Factory": "5086dd50ac5326d2824ec8cd07a0c183ed6e1fa29e256526e3294edbbd36476d",
+    "IDiesisPerpDeploy": "f55d0877565435b09e2eafb996d115b0c17449179ec7edaa991d98cbb5923aaf",
+    "IDiesisOperatorBond": "4b41498e897f85de12a6ea37a49e8a71990ea262495c1dfdf3f33aa9091d5f68",
+    "IDiesisBundleEscrow": "833bbae4353723daf3a2b8d46a0dd818ffec56e49b55fe5a885a39b21f608e79",
+    "DiesisStaking": "20eff9a779c29621d97b46cac29c9d5dea7c10737eb3a250f9effd2ec380e631",
+    "IDiesisPosition": "71f2a8d5f6809a84ed6cf3eb81581b4ae71498fd49a50f6e7092aaa455beddf8",
+    "IValidatorShare": "6028ca260d11dfd72c54444c18fc57d75c75f1c6f4ffc030744086b1b166ca83",
+    "ILiquidStakedDS": "3f2760c4ad797bd9d13e107230468bcc0b0af8cddbac1cef3f1ec6b1ed3cad4b",
+    "IWrappedDS": "4cb451539f430ca9d86fa7e5b92383a3cf39a34e5db876a08d53c2519d12928f",
+    "DiesisPatron": "f7c524989dc1c00295cd5ebb292b12e9329b25ee3228259814c69070a53dc5ac",
+    "DiesisConfig": "052d83a98a077df42141b372a7a4c83fb2790838b101cb9a8a9df462db07b724",
+    "IDiesisCoreVault": "b9dae1244732c892b2cb2d8e77607595fdc710cb71d30386409511b76c358443",
+    "IDiesisIssuanceAuction": "f66563e504be65e6c71150a4de9136bb85c0e1cf9a18a72d269420c1c326e558",
+    "IDiesisBuybackBurn": "484668bf790667af7c7ff2f5f14a3a183b1d6a42a84c19f6f06b494e1ad2c196",
+    "DiesisShieldedPool": "97bf61d5387a8e9fd608230b43f9ddca273956c917950f9bc5b1bd58f323406f",
+    "DiesisPrivacyPools": "7e90824f28e9e7016782a442931ba413d288c1101b777688473041f4429f4904",
+    "IDiesisNameRegistry": "e0f542231fd7e01a74e824ea654cac0d90156d63573a8ad98d96e696994dccfc",
+    "DiesisBaseRegistrar": "c66c7fdd869e1c33597451a04bfe4050ae3bf6a8ee11cb88e1949e536a1add0b",
+    "DiesisPublicResolver": "55427a62acdbcf55d9e5574bfa044db1d2e77cec7952e705d203ef7ebd153b9b",
+    "IDiesisReverseRegistrar": "3293752f1ae73f8f9ec56c3f1ef27753f020de186b6a4456997a9eab193c1fd0",
+    "IDiesisNameVerifier": "c8ba5532d492b3b3d54547ff59eb06ac8ecb534271d554cbc4efb2579f3b0e9f",
+    "IDiesisNamePolicy": "86eba78d4f479b911413178af9e021208f1851646325b1048854ca81041168bf"
+  }
 }

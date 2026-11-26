@@ -255,6 +255,9 @@ interface IDiesisPatron {
     /// @dev For an ordinary grant the bounds are the stored beneficiary
     function resolveGrantContext(address sender, address target, bytes calldata input, uint256 fee) external view returns (bytes32 grantId, uint256 jarBalance, uint32 maxTransactions, uint32 transactionsUsed, uint256 maxLifetimeSpend, uint256 lifetimeSpent);
 
+    /// @notice Campaign-owner form of `revokeGrantAuthorization` for the campaign's own grant jar.
+    function revokeCampaignGrantAuthorizationV1(bytes32 campaignId, address beneficiary) external;
+
     /// @notice Pre-burn one specific (beneficiary, nonce) voucher so it can never be claimed, without revoking the whole campaign.
     function revokeCampaignVoucherV1(bytes32 campaignId, address beneficiary, uint256 nonce) external;
 
@@ -263,6 +266,10 @@ interface IDiesisPatron {
 
     /// @notice Transfer campaign ownership and voucher-signing authority.
     function rotateCampaignOwnerV1(bytes32 campaignId, address newOwner) external;
+
+    /// @notice Campaign-owner form of `setGrantAuthorization`, limited to the campaign's own grant jar and the same exact bounds. beneficiary's grant resolves to the campaign jar, as after a voucher claim.
+    /// @dev It does not assign the jar: the route takes effect only when the
+    function setCampaignGrantAuthorizationV1(bytes32 campaignId, address beneficiary, address target, bytes4 selector, uint32 maxTransactions, uint256 maxLifetimeSpend, uint64 expiry) external;
 
     /// @notice Pause or resume all new claims for a campaign.
     function setCampaignRevokedV1(bytes32 campaignId, bool revoked) external;
